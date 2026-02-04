@@ -17,7 +17,7 @@ if (envFile.exists()) {
                 val key = t.substring(0, i).trim()
                 var value = t.substring(i + 1).trim()
                 if (value.startsWith("\"") && value.endsWith("\"")) value = value.drop(1).dropLast(1)
-                if (key.isNotEmpty()) project.extra.set(key, value)
+                if (key.isNotEmpty()) rootProject.extra.set(key, value)
             }
         }
     }
@@ -40,23 +40,23 @@ android {
         buildConfigField(
             "String",
             "VPN_API_BASE_URL",
-            "\"${(project.findProperty("VPN_API_BASE_URL") as? String)?.ifBlank { "http://77.110.116.139:8000/api/" } ?: "http://77.110.116.139:8000/api/"}\""
+            "\"${(rootProject.findProperty("VPN_API_BASE_URL") as? String)?.ifBlank { "http://77.110.116.139:8000/api/" } ?: "http://77.110.116.139:8000/api/"}\""
         )
         buildConfigField(
             "String",
             "VPN_API_HOST",
-            "\"${(project.findProperty("VPN_API_HOST") as? String)?.ifBlank { "77.110.116.139" } ?: "77.110.116.139"}\""
+            "\"${(rootProject.findProperty("VPN_API_HOST") as? String)?.ifBlank { "77.110.116.139" } ?: "77.110.116.139"}\""
         )
         buildConfigField(
             "String",
             "VPN_API_CERT_PINS",
-            "\"${(project.findProperty("VPN_API_CERT_PINS") as? String)?.trim().orEmpty()}\""
+            "\"${(rootProject.findProperty("VPN_API_CERT_PINS") as? String)?.trim().orEmpty()}\""
         )
         // کلید رمزگشایی کانفیگ (همان CONFIG_ENCRYPTION_KEY در بک‌اند)
         buildConfigField(
             "String",
             "CONFIG_ENCRYPTION_KEY",
-            "\"${(project.findProperty("CONFIG_ENCRYPTION_KEY") as? String)?.trim().orEmpty()}\""
+            "\"${(rootProject.findProperty("CONFIG_ENCRYPTION_KEY") as? String)?.trim().orEmpty()}\""
         )
 
         val abiFilterList = (properties["ABI_FILTERS"] as? String)?.split(';')
