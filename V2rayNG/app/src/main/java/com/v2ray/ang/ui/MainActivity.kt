@@ -19,6 +19,7 @@ import androidx.lifecycle.lifecycleScope
 import com.v2ray.ang.AppConfig
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityMainBinding
+import com.v2ray.ang.dto.GroupMapItem
 import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.enums.PermissionType
 import com.v2ray.ang.extension.toast
@@ -94,13 +95,25 @@ class MainActivity : HelperBaseActivity() {
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
         }
+        mainViewModel.apiSyncState.observe(this) { state ->
+            when (state) {
+                is MainViewModel.ApiSyncState.Failed -> {
+                    val msg = state.reason?.takeIf { it.isNotBlank() }
+                        ?: getString(R.string.toast_services_failure)
+                    toastError(msg)
+                }
+                else -> { }
+            }
+        }
         mainViewModel.startListenBroadcast()
         mainViewModel.initAssets(assets)
     }
 
     private fun setupGroupTab() {
-        // Locked build: no subscriptions/groups. Keep a single tab and hide UI.
-        groupPagerAdapter.update(listOf())
+        // Locked build: single tab for API servers (subId = "" so all servers are shown).
+        groupPagerAdapter.update(
+            listOf(GroupMapItem(id = "", remarks = getString(R.string.filter_config_all)))
+        )
     }
 
     private fun handleFabAction() {
