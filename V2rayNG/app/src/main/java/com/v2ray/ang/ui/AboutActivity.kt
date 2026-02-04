@@ -14,12 +14,6 @@ class AboutActivity : BaseActivity() {
         super.onCreate(savedInstanceState)
         setContentViewWithToolbar(binding.root, showHomeAsUp = true, title = getString(R.string.title_about))
 
-        // Locked build: hide external links (source/feedback/TG/privacy).
-        binding.layoutSoureCcode.visibility = View.GONE
-        binding.layoutFeedback.visibility = View.GONE
-        binding.layoutTgChannel.visibility = View.GONE
-        binding.layoutPrivacyPolicy.visibility = View.GONE
-
         binding.layoutOssLicenses.setOnClickListener {
             val webView = android.webkit.WebView(this)
             webView.loadUrl("file:///android_asset/open_source_licenses.html")
@@ -30,9 +24,8 @@ class AboutActivity : BaseActivity() {
                 .show()
         }
 
-        "v${BuildConfig.VERSION_NAME} (${V2RayNativeManager.getLibVersion()})".also {
-            binding.tvVersion.text = it
-        }
+        binding.tvVersion.text = "v${BuildConfig.VERSION_NAME} · ${V2RayNativeManager.getLibVersion()}"
         binding.tvAppId.text = BuildConfig.APPLICATION_ID
+        binding.tvAppId.visibility = View.GONE
     }
 }

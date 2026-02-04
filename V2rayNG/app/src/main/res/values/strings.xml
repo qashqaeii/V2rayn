@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name" translatable="false">Secure VPN</string>
+    <string name="app_name" translatable="false">LYON VPN</string>
     <string name="app_widget_name">VPN</string>
     <string name="app_tile_name">VPN</string>
     <string name="app_tile_first_use">Please open the app and select a location</string>
@@ -245,6 +245,7 @@
     <string name="toast_tg_app_not_found">Telegram app not found</string>
     <string name="title_privacy_policy">Privacy policy</string>
     <string name="title_about">About</string>
+    <string name="about_developer">Developer \u0026 Designer: qashqaeii</string>
     <string name="title_source_code">Source code</string>
     <string name="title_oss_license">Open Source licenses</string>
     <string name="title_tg_channel">Telegram channel</string>

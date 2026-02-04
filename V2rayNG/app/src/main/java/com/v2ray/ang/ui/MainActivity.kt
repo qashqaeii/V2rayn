@@ -94,6 +94,10 @@ class MainActivity : HelperBaseActivity() {
         mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
+            // بعد از اتصال موفق، اپ را به پس‌زمینه ببر (نمایش داده نشود)
+            if (isRunning == true) {
+                moveTaskToBack(true)
+            }
         }
         mainViewModel.apiSyncState.observe(this) { state ->
             when (state) {
