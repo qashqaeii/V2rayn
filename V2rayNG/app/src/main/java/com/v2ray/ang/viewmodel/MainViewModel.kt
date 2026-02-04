@@ -124,14 +124,13 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     /**
      * اعمال تنظیمات دریافتی از API (پنل ادمین) به Mmkv؛ بدون نمایش به کاربر.
+     * همهٔ مقادیر به‌صورت String ذخیره می‌شوند به‌جز true/false که Boolean هستند،
+     * چون بیشتر کد با decodeSettingsString می‌خواند و ذخیرهٔ Int/Long باعث null شدن می‌شد.
      */
     private fun applyRemoteConfig(config: Map<String, String>) {
         for ((key, value) in config) {
             when {
                 value == "true" || value == "false" -> MmkvManager.encodeSettings(key, value == "true")
-                value.toIntOrNull() != null -> MmkvManager.encodeSettings(key, value.toIntOrNull()!!)
-                value.toLongOrNull() != null -> MmkvManager.encodeSettings(key, value.toLongOrNull()!!)
-                value.toFloatOrNull() != null -> MmkvManager.encodeSettings(key, value.toFloatOrNull()!!)
                 else -> MmkvManager.encodeSettings(key, value)
             }
         }
