@@ -17,7 +17,7 @@ if (envFile.exists()) {
                 val key = t.substring(0, i).trim()
                 var value = t.substring(i + 1).trim()
                 if (value.startsWith("\"") && value.endsWith("\"")) value = value.drop(1).dropLast(1)
-                if (key.isNotEmpty()) project.setProperty(key, value)
+                if (key.isNotEmpty()) project.extra.set(key, value)
             }
         }
     }
