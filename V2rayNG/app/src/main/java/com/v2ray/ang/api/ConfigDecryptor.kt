@@ -3,7 +3,6 @@ package com.v2ray.ang.api
 import android.util.Base64
 import android.util.Log
 import com.v2ray.ang.AppConfig
-import java.nio.charset.StandardCharsets
 import javax.crypto.Cipher
 import javax.crypto.spec.IvParameterSpec
 import javax.crypto.spec.SecretKeySpec
@@ -28,7 +27,7 @@ object ConfigDecryptor {
      */
     fun decrypt(base64Payload: String?, keyUtf8: String?): String? {
         if (base64Payload.isNullOrBlank() || keyUtf8.isNullOrBlank()) return null
-        val keyBytes = keyUtf8.encodeToByteArray(StandardCharsets.UTF_8).copyOf(KEY_LENGTH)
+        val keyBytes = keyUtf8.encodeToByteArray().copyOf(KEY_LENGTH)
         if (keyBytes.size != KEY_LENGTH) return null
         return try {
             val raw = Base64.decode(base64Payload, Base64.NO_WRAP)
@@ -38,7 +37,7 @@ object ConfigDecryptor {
             val cipher = Cipher.getInstance(TRANSFORMATION)
             cipher.init(Cipher.DECRYPT_MODE, SecretKeySpec(keyBytes, ALGORITHM), IvParameterSpec(iv))
             val decrypted = cipher.doFinal(ciphertext)
-            String(decrypted, StandardCharsets.UTF_8)
+            decrypted.decodeToString()
         } catch (e: Exception) {
             Log.w(AppConfig.TAG, "Config decrypt failed", e)
             null
