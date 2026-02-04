@@ -1,3 +1,5 @@
+@file:Suppress("DEPRECATION")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -105,7 +107,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            jniLibs.directories.setFrom(file("libs"))
+            jniLibs.srcDir("libs")
         }
     }
 
