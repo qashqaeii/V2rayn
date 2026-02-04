@@ -1,0 +1,7 @@
+# Copy to gradle.properties and set your API base URL for local builds.
+# Do not commit gradle.properties if it contains real URLs.
+# For GitHub Actions, use repository Secrets instead (see DEPLOY.md).
+
+# VPN_API_BASE_URL=https://your-api-domain.com/vpn/
+# VPN_API_HOST=your-api-domain.com
+# VPN_API_CERT_PINS=sha256/YourCertPin

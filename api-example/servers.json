@@ -1,0 +1,14 @@
+[
+  {
+    "id": "srv1",
+    "name": "Germany #1",
+    "flag": "de",
+    "config": "vless://YOUR-UUID@your-server.com:443?type=tcp&security=tls&sni=your-server.com#Germany"
+  },
+  {
+    "id": "srv2",
+    "name": "Netherlands",
+    "flag": "nl",
+    "config": "vless://YOUR-UUID@another-server.com:443?type=tcp&security=tls#Netherlands"
+  }
+]
