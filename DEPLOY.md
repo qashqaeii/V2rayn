@@ -12,7 +12,10 @@
   - `VPN_API_BASE_URL`: آدرس پایه API (مثلاً `http://77.110.116.139:8000/api/` برای بک‌اند جنگوی همین ریپو در پوشهٔ `backend`)
   - `CONFIG_ENCRYPTION_KEY`: کلید رمزگشایی کانفیگ (دقیقاً همان مقدار `CONFIG_ENCRYPTION_KEY` در `backend/.env`؛ ۳۲ کاراکتر)
   - اختیاری: `VPN_API_HOST`, `VPN_API_CERT_PINS`
-- در **Settings → Secrets and variables → Actions** فقط این Secretها را برای **امضای APK** اضافه کنید:
+- **پیش‌فرض:** بدون تنظیم هیچ Secret یا Variable، بیلد **Debug** انجام می‌شود و APKها از **Artifacts** قابل دانلودند.
+- **برای بیلد Release امضا‌شده:** در **Settings → Secrets and variables → Actions**:
+  1. در **Variables** یک متغیر اضافه کنید: نام `BUILD_SIGNED_RELEASE`، مقدار `true`.
+  2. در **Secrets** این چهار مقدار را اضافه کنید:
 
 | Secret | توضیح |
 |--------|--------|
@@ -23,9 +26,10 @@
 
 ### بیلد
 - با هر **push به برنچ `master`** یا از طریق **Actions → Build APK → Run workflow** بیلد اجرا می‌شود.
-- **اگر چهار Secret بالا را تنظیم نکرده باشید:** بیلد به‌صورت **Debug** انجام می‌شود و APKهای قابل نصب از تب **Artifacts** قابل دانلود هستند (مناسب تست).
-- **اگر Secretهای keystore را اضافه کرده باشید:** بیلد **Release امضا‌شده** انجام می‌شود (مناسب انتشار).
-- خروجی APKها در هر صورت در تب **Artifacts** همان ران قابل دانلود است.
+- خروجی APKها در تب **Artifacts** همان ران قابل دانلود است.
+
+### اگر پیام Billing یا Spending limit دیدید
+- اگر در Actions خطای **"recent account payments have failed or your spending limit needs to be increased"** ظاهر شد، در **GitHub → Settings → Billing and plans** وضعیت حساب و محدودیت استفاده (مثلاً دقایق رایگان یا طرح فعلی) را بررسی کنید. این مورد از طریق کد قابل رفع نیست.
 
 ---
 

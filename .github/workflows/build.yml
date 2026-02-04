@@ -83,16 +83,17 @@ jobs:
         distribution: 'temurin'
         java-version: '21'
 
+    # برای بیلد امضا‌شده: در Settings → Variables مقدار BUILD_SIGNED_RELEASE را true قرار دهید و چهار Secret keystore را اضافه کنید
     - name: Decode Keystore
       id: android_keystore
-      if: ${{ secrets.APP_KEYSTORE_BASE64 != '' }}
+      if: ${{ vars.BUILD_SIGNED_RELEASE == 'true' }}
       uses: timheuer/base64-to-file@v1.2.4
       with:
         fileName: "android_keystore.jks"
         encodedString: ${{ secrets.APP_KEYSTORE_BASE64 }}
 
     - name: Build APK (signed release)
-      if: ${{ secrets.APP_KEYSTORE_BASE64 != '' }}
+      if: ${{ vars.BUILD_SIGNED_RELEASE == 'true' }}
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
@@ -104,13 +105,13 @@ jobs:
           -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEYSTORE_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
 
-    - name: Note (no keystore secrets)
-      if: ${{ secrets.APP_KEYSTORE_BASE64 == '' }}
+    - name: Note (debug build)
+      if: ${{ vars.BUILD_SIGNED_RELEASE != 'true' }}
       run: |
-        echo "::notice title=Debug build::APP_KEYSTORE_BASE64 not set. Building debug APK. For signed release, add Secrets: APP_KEYSTORE_BASE64, APP_KEYSTORE_PASSWORD, APP_KEYSTORE_ALIAS, APP_KEY_PASSWORD (see DEPLOY.md)"
+        echo "::notice title=Debug build::Building debug APK. For signed release set Variables → BUILD_SIGNED_RELEASE = true and add keystore Secrets (see DEPLOY.md)"
 
-    - name: Build APK (debug — when keystore secrets not set)
-      if: ${{ secrets.APP_KEYSTORE_BASE64 == '' }}
+    - name: Build APK (debug)
+      if: ${{ vars.BUILD_SIGNED_RELEASE != 'true' }}
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
@@ -139,7 +140,7 @@ jobs:
         path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/**/*x86*.apk
 
     - name: Upload to release
-      if: github.event.inputs.release_tag != '' && secrets.APP_KEYSTORE_BASE64 != ''
+      if: github.event.inputs.release_tag != '' && vars.BUILD_SIGNED_RELEASE == 'true'
       uses: svenstaro/upload-release-action@v2
       with:
         file: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk
