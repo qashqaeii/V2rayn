@@ -23,16 +23,13 @@
 | `APP_KEYSTORE_PASSWORD` | پسورد keystore |
 | `APP_KEYSTORE_ALIAS` | alias کلید |
 | `APP_KEY_PASSWORD` | پسورد کلید |
-
 ### بیلد
 - با هر **push به برنچ `master`** یا از طریق **Actions → Build APK → Run workflow** بیلد اجرا می‌شود.
 - خروجی APKها در تب **Artifacts** همان ران قابل دانلود است.
 
 ### اگر پیام Billing یا Spending limit دیدید
 - اگر در Actions خطای **"recent account payments have failed or your spending limit needs to be increased"** ظاهر شد، در **GitHub → Settings → Billing and plans** وضعیت حساب و محدودیت استفاده (مثلاً دقایق رایگان یا طرح فعلی) را بررسی کنید. این مورد از طریق کد قابل رفع نیست.
-
 ---
-
 ## ۲. سرور و پنل API
 
 اپ فقط از یک endpoint سرورها را می‌گیرد؛ پنل و دیتابیس سرورها روی **سرور خودتان** است.
