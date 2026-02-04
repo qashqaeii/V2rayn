@@ -24,6 +24,7 @@ if (envFile.exists()) {
 android {
     namespace = "com.v2ray.ang"
     compileSdk = 36
+    ndkVersion = "28.2.13676358"
 
     defaultConfig {
         applicationId = "com.v2ray.ang"
@@ -104,7 +105,7 @@ android {
 
     sourceSets {
         getByName("main") {
-            jniLibs.srcDirs("libs")
+            jniLibs.directories.setFrom(file("libs"))
         }
     }
 
