@@ -84,13 +84,15 @@ jobs:
         java-version: '21'
 
     - name: Decode Keystore
-      uses: timheuer/base64-to-file@v1.2.4
       id: android_keystore
+      if: ${{ secrets.APP_KEYSTORE_BASE64 != '' }}
+      uses: timheuer/base64-to-file@v1.2.4
       with:
         fileName: "android_keystore.jks"
         encodedString: ${{ secrets.APP_KEYSTORE_BASE64 }}
 
-    - name: Build APK
+    - name: Build APK (signed release)
+      if: ${{ secrets.APP_KEYSTORE_BASE64 != '' }}
       run: |
         cd ${{ github.workspace }}/V2rayNG
         echo "sdk.dir=${ANDROID_HOME}" > local.properties
@@ -101,31 +103,44 @@ jobs:
           -Pandroid.injected.signing.store.password=${{ secrets.APP_KEYSTORE_PASSWORD }} \
           -Pandroid.injected.signing.key.alias=${{ secrets.APP_KEYSTORE_ALIAS }} \
           -Pandroid.injected.signing.key.password=${{ secrets.APP_KEY_PASSWORD }}
-    
+
+    - name: Note (no keystore secrets)
+      if: ${{ secrets.APP_KEYSTORE_BASE64 == '' }}
+      run: |
+        echo "::notice title=Debug build::APP_KEYSTORE_BASE64 not set. Building debug APK. For signed release, add Secrets: APP_KEYSTORE_BASE64, APP_KEYSTORE_PASSWORD, APP_KEYSTORE_ALIAS, APP_KEY_PASSWORD (see DEPLOY.md)"
+
+    - name: Build APK (debug — when keystore secrets not set)
+      if: ${{ secrets.APP_KEYSTORE_BASE64 == '' }}
+      run: |
+        cd ${{ github.workspace }}/V2rayNG
+        echo "sdk.dir=${ANDROID_HOME}" > local.properties
+        chmod 755 gradlew
+        ./gradlew assemblePlaystoreDebug
+
     - name: Upload arm64-v8a APK
       uses: actions/upload-artifact@v6
-      if: ${{ success() }}
+      if: success()
       with:
         name: arm64-v8a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*arm64-v8a*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/**/*arm64-v8a*.apk
 
     - name: Upload armeabi-v7a APK
       uses: actions/upload-artifact@v6
-      if: ${{ success() }}
+      if: success()
       with:
         name: armeabi-v7a
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*armeabi-v7a*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/**/*armeabi-v7a*.apk
 
     - name: Upload x86 APK
       uses: actions/upload-artifact@v6
-      if: ${{ success() }}
+      if: success()
       with:
         name: x86-apk
-        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*x86*.apk
+        path: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/**/*x86*.apk
 
     - name: Upload to release
+      if: github.event.inputs.release_tag != '' && secrets.APP_KEYSTORE_BASE64 != ''
       uses: svenstaro/upload-release-action@v2
-      if: github.event.inputs.release_tag != ''
       with:
         file: ${{ github.workspace }}/V2rayNG/app/build/outputs/apk/playstore/release/*.apk
         tag: ${{ github.event.inputs.release_tag }}
