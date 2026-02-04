@@ -29,7 +29,7 @@ android {
     ndkVersion = "28.2.13676358"
 
     defaultConfig {
-        applicationId = "com.v2ray.ang"
+        applicationId = "com.securevpn.client"
         minSdk = 24
         targetSdk = 36
         versionCode = 707
