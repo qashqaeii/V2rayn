@@ -60,7 +60,10 @@ class MainRecyclerAdapter(
             val aff = MmkvManager.decodeServerAffiliationInfo(guid)
             val flagEmoji = aff?.flag?.toFlagEmoji().orEmpty()
             holder.itemMainBinding.tvName.text = (flagEmoji + " " + profile.remarks).trim()
-            holder.itemMainBinding.tvStatistics.text = getAddress(profile)
+            // Locked build: آدرس سرور نمایش داده نشود؛ فقط پرچم، نام و پروتکل.
+            holder.itemMainBinding.tvStatistics.text = ""
+            holder.itemMainBinding.tvStatistics.visibility = View.GONE
+            holder.itemMainBinding.layoutStatsRow.visibility = View.GONE
             holder.itemMainBinding.tvType.text = profile.configType.name
 
             //TestResult

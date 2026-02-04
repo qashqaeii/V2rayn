@@ -251,14 +251,8 @@ object V2RayServiceManager {
             } else {
                 service.getString(R.string.connection_test_error, errorStr)
             }
+            // فقط نتیجه (مثلاً Success: Connection took 212ms)؛ بدون نمایش IP برای حفظ حریم خصوصی.
             MessageUtil.sendMsg2UI(service, AppConfig.MSG_MEASURE_DELAY_SUCCESS, result)
-
-            // Only fetch IP info if the delay test was successful
-            if (time >= 0) {
-                SpeedtestManager.getRemoteIPInfo()?.let { ip ->
-                    MessageUtil.sendMsg2UI(service, AppConfig.MSG_MEASURE_DELAY_SUCCESS, "$result\n$ip")
-                }
-            }
         }
     }
 
