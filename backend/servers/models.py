@@ -1,8 +1,26 @@
 """
 Server model: VLESS config, country, flag, active, priority.
 Plain config is never exposed via API; only encrypted.
+
+AppSetting: key-value store for app defaults. Managed only in Django admin;
+app fetches via GET /api/config/ and applies (user cannot change in app).
 """
 from django.db import models
+
+
+class AppSetting(models.Model):
+    """Singleton-style key-value for app preferences. Admin-only; app reads via API."""
+
+    key = models.CharField(max_length=128, unique=True, db_index=True)
+    value = models.TextField(blank=True)
+
+    class Meta:
+        ordering = ["key"]
+        verbose_name = "App setting"
+        verbose_name_plural = "App settings"
+
+    def __str__(self):
+        return f"{self.key}={self.value[:50]}..."
 
 
 class Server(models.Model):

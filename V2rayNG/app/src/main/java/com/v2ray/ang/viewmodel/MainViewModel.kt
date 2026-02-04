@@ -100,6 +100,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             try {
                 val servers = vpnServersRepository.fetchServers()
                 ApiServersImporter.replaceAll(servers)
+                // دریافت تنظیمات از پنل ادمین و اعمال (کاربر در اپ نمی‌تواند تنظیمات را ببیند یا تغییر دهد)
+                try {
+                    val config = vpnServersRepository.fetchConfig()
+                    applyRemoteConfig(config)
+                } catch (_: Exception) { /* در صورت خطا از مقادیر فعلی دستگاه استفاده می‌شود */ }
                 withContext(Dispatchers.Main) {
                     apiSyncState.value = ApiSyncState.Synced
                     subscriptionIdChanged("") // disable group filtering
@@ -113,6 +118,21 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     subscriptionIdChanged("")
                     reloadServerList()
                 }
+            }
+        }
+    }
+
+    /**
+     * اعمال تنظیمات دریافتی از API (پنل ادمین) به Mmkv؛ بدون نمایش به کاربر.
+     */
+    private fun applyRemoteConfig(config: Map<String, String>) {
+        for ((key, value) in config) {
+            when {
+                value == "true" || value == "false" -> MmkvManager.encodeSettings(key, value == "true")
+                value.toIntOrNull() != null -> MmkvManager.encodeSettings(key, value.toIntOrNull()!!)
+                value.toLongOrNull() != null -> MmkvManager.encodeSettings(key, value.toLongOrNull()!!)
+                value.toFloatOrNull() != null -> MmkvManager.encodeSettings(key, value.toFloatOrNull()!!)
+                else -> MmkvManager.encodeSettings(key, value)
             }
         }
     }

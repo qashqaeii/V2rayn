@@ -35,6 +35,8 @@ class VpnServersRepository {
 
     suspend fun fetchServers(): List<ApiServerDto> = api.getServers()
 
+    suspend fun fetchConfig(): Map<String, String> = api.getConfig()
+
     private fun OkHttpClient.Builder.applyCertificatePinning(): OkHttpClient.Builder {
         val host = BuildConfig.VPN_API_HOST.trim()
         val pins = BuildConfig.VPN_API_CERT_PINS

@@ -199,10 +199,6 @@ class MainActivity : HelperBaseActivity() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.settings -> {
-            requestActivityLauncher.launch(Intent(this, SettingsActivity::class.java))
-            true
-        }
         R.id.about -> {
             startActivity(Intent(this, AboutActivity::class.java))
             true
