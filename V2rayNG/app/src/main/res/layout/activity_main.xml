@@ -234,8 +234,8 @@
                             android:id="@+id/location_dot"
                             android:layout_width="12dp"
                             android:layout_height="12dp"
-                            android:layout_marginStart="52%"
-                            android:layout_marginTop="38%"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginTop="24dp"
                             android:background="@drawable/bg_location_dot" />
                     </FrameLayout>
 
