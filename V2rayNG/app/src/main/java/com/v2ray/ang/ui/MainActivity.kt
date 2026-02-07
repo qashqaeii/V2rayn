@@ -1,40 +1,36 @@
 package com.v2ray.ang.ui
 
 import android.content.Intent
-import android.content.res.ColorStateList
-import android.net.Uri
 import android.net.VpnService
 import android.os.Bundle
-import android.util.Log
+import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
+import android.view.View
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
-import com.v2ray.ang.AppConfig
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.v2ray.ang.R
 import com.v2ray.ang.databinding.ActivityMainBinding
+import com.v2ray.ang.databinding.BottomSheetChooseCountryBinding
 import com.v2ray.ang.dto.GroupMapItem
-import com.v2ray.ang.enums.EConfigType
 import com.v2ray.ang.enums.PermissionType
 import com.v2ray.ang.extension.toast
 import com.v2ray.ang.extension.toastError
-import com.v2ray.ang.handler.AngConfigManager
 import com.v2ray.ang.handler.MmkvManager
 import com.v2ray.ang.handler.SettingsChangeManager
 import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.V2RayServiceManager
-import com.v2ray.ang.util.Utils
 import com.v2ray.ang.viewmodel.MainViewModel
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
+import java.util.Locale
 
 class MainActivity : HelperBaseActivity() {
     private val binding by lazy {
@@ -43,6 +39,7 @@ class MainActivity : HelperBaseActivity() {
 
     val mainViewModel: MainViewModel by viewModels()
     private lateinit var groupPagerAdapter: GroupPagerAdapter
+    private var countryBottomSheet: BottomSheetDialog? = null
 
     private val requestVpnPermission = registerForActivityResult(ActivityResultContracts.StartActivityForResult()) {
         if (it.resultCode == RESULT_OK) {
@@ -58,18 +55,15 @@ class MainActivity : HelperBaseActivity() {
         }
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(binding.root)
-        setupToolbar(binding.toolbar, false, getString(R.string.title_server))
+        setupToolbar(null, false, null)
 
-        // setup viewpager
         groupPagerAdapter = GroupPagerAdapter(this, emptyList())
         binding.viewPager.adapter = groupPagerAdapter
         binding.viewPager.isUserInputEnabled = true
 
-        // Locked build: navigation drawer removed
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
                 isEnabled = false
@@ -78,47 +72,55 @@ class MainActivity : HelperBaseActivity() {
             }
         })
 
-        binding.fab.setOnClickListener { handleFabAction() }
-        binding.layoutTest.setOnClickListener { handleLayoutTestClick() }
+        binding.btnPower.setOnClickListener { handlePowerAction() }
+        binding.tvStatus.setOnClickListener { handleStatusClick() }
+        binding.countrySelector.setOnClickListener { openChooseCountrySheet() }
+        binding.btnMenu.setOnClickListener { showMenu(it) }
 
         setupGroupTab()
         setupViewModel()
-        // Locked build: always sync servers from API on start.
         mainViewModel.syncServersFromApiOnStart()
 
-        checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {
-        }
+        checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
+        refreshSelectedServerUi()
     }
 
     private fun setupViewModel() {
-        mainViewModel.updateTestResultAction.observe(this) { setTestState(it) }
+        mainViewModel.updateTestResultAction.observe(this) { setStatusText(it) }
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
         }
         mainViewModel.apiSyncState.observe(this) { state ->
             when (state) {
+                is MainViewModel.ApiSyncState.Syncing -> {
+                    binding.progressBar.isVisible = true
+                }
+                is MainViewModel.ApiSyncState.Synced,
+                is MainViewModel.ApiSyncState.Idle -> {
+                    binding.progressBar.isVisible = false
+                    refreshSelectedServerUi()
+                }
                 is MainViewModel.ApiSyncState.Failed -> {
+                    binding.progressBar.isVisible = false
                     val msg = state.reason?.takeIf { it.isNotBlank() }
                         ?: getString(R.string.toast_services_failure)
                     toastError(msg)
                 }
-                else -> { }
             }
         }
+        mainViewModel.updateListAction.observe(this) { refreshSelectedServerUi() }
         mainViewModel.startListenBroadcast()
         mainViewModel.initAssets(assets)
     }
 
     private fun setupGroupTab() {
-        // Locked build: single tab for API servers (subId = "" so all servers are shown).
         groupPagerAdapter.update(
             listOf(GroupMapItem(id = "", remarks = getString(R.string.filter_config_all)))
         )
     }
 
-    private fun handleFabAction() {
+    private fun handlePowerAction() {
         applyRunningState(isLoading = true, isRunning = false)
-
         if (mainViewModel.isRunning.value == true) {
             V2RayServiceManager.stopVService(this)
         } else if (SettingsManager.isVpnMode()) {
@@ -133,18 +135,14 @@ class MainActivity : HelperBaseActivity() {
         }
     }
 
-    private fun handleLayoutTestClick() {
-        if (mainViewModel.isRunning.value == true) {
-            setTestState(getString(R.string.connection_test_testing))
-            mainViewModel.testCurrentServerRealPing()
-        } else {
-            // service not running: keep existing no-op (could show a message if desired)
-        }
+    private fun setStatusText(content: String?) {
+        binding.tvStatus.text = content ?: getString(R.string.vpn_disconnected)
     }
 
     private fun startV2Ray() {
         if (MmkvManager.getSelectServer().isNullOrEmpty()) {
-            toast(R.string.title_file_chooser)
+            toast(R.string.vpn_select_location)
+            applyRunningState(isLoading = false, isRunning = false)
             return
         }
         V2RayServiceManager.startVService(this)
@@ -160,37 +158,111 @@ class MainActivity : HelperBaseActivity() {
         }
     }
 
-    private fun setTestState(content: String?) {
-        binding.tvTestState.text = content
+    private fun handleStatusClick() {
+        if (mainViewModel.isRunning.value == true) {
+            binding.tvStatus.text = getString(R.string.connection_test_testing)
+            mainViewModel.testCurrentServerRealPing()
+        }
     }
 
-    private  fun applyRunningState(isLoading: Boolean, isRunning: Boolean) {
+    private fun applyRunningState(isLoading: Boolean, isRunning: Boolean) {
         if (isLoading) {
-            binding.fab.setImageResource(R.drawable.ic_fab_check)
+            binding.progressBar.isVisible = true
+            binding.btnPower.isEnabled = false
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
+            binding.tvStatus.text = getString(R.string.toast_services_start)
             return
         }
-
+        binding.progressBar.isVisible = false
+        binding.btnPower.isEnabled = true
         if (isRunning) {
-            binding.fab.setImageResource(R.drawable.ic_stop_24dp)
-            binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_active))
-            binding.fab.contentDescription = getString(R.string.action_stop_service)
-            setTestState(getString(R.string.connection_connected))
-            binding.layoutTest.isFocusable = true
+            binding.btnPower.contentDescription = getString(R.string.action_stop_service)
+            setStatusText(getString(R.string.vpn_connected))
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connected)
+            binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
+            binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
         } else {
-            binding.fab.setImageResource(R.drawable.ic_play_24dp)
-            binding.fab.backgroundTintList = ColorStateList.valueOf(ContextCompat.getColor(this, R.color.color_fab_inactive))
-            binding.fab.contentDescription = getString(R.string.tasker_start_service)
-            setTestState(getString(R.string.connection_not_connected))
-            binding.layoutTest.isFocusable = false
+            binding.btnPower.contentDescription = getString(R.string.tasker_start_service)
+            setStatusText(getString(R.string.vpn_disconnected))
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
+            binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
+            binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
         }
+    }
+
+    private fun refreshSelectedServerUi() {
+        val guid = MmkvManager.getSelectServer()
+        if (guid.isNullOrEmpty()) {
+            binding.tvCountryName.text = getString(R.string.vpn_select_location)
+            binding.tvCountryFlag.text = "🌍"
+            return
+        }
+        val item = mainViewModel.serversCache.find { it.guid == guid }
+        if (item != null) {
+            val aff = MmkvManager.decodeServerAffiliationInfo(guid)
+            val flagEmoji = aff?.flag?.toFlagEmoji()?.takeIf { it.isNotEmpty() } ?: "🌍"
+            binding.tvCountryFlag.text = flagEmoji
+            binding.tvCountryName.text = item.profile.remarks.ifEmpty { guid.take(8) }
+        } else {
+            binding.tvCountryName.text = getString(R.string.vpn_select_location)
+            binding.tvCountryFlag.text = "🌍"
+        }
+    }
+
+    private fun String.toFlagEmoji(): String {
+        val code = trim()
+        if (code.isEmpty()) return ""
+        if (code.codePoints().count() > 1 && code.any { Character.getType(it) == Character.OTHER_SYMBOL.toInt() }) return code
+        val cc = code.uppercase(Locale.US)
+        if (cc.length != 2 || !cc.all { it in 'A'..'Z' }) return ""
+        val base = 0x1F1E6
+        return String(Character.toChars(base + (cc[0].code - 'A'.code))) + String(Character.toChars(base + (cc[1].code - 'A'.code)))
+    }
+
+    private fun openChooseCountrySheet() {
+        countryBottomSheet?.dismiss()
+        val list = mainViewModel.serversCache
+        if (list.isEmpty()) {
+            toast(R.string.vpn_select_location)
+            return
+        }
+        val sheetBinding = BottomSheetChooseCountryBinding.inflate(layoutInflater)
+        countryBottomSheet = BottomSheetDialog(this).apply {
+            setContentView(sheetBinding.root)
+            setCancelable(true)
+        }
+        val adapter = CountryListAdapter(list.toList()) { guid ->
+            if (guid != MmkvManager.getSelectServer()) {
+                MmkvManager.setSelectServer(guid)
+                if (mainViewModel.isRunning.value == true) restartV2Ray()
+                refreshSelectedServerUi()
+            }
+            countryBottomSheet?.dismiss()
+        }
+        sheetBinding.recyclerCountries.adapter = adapter
+        adapter.updateList(list.toList())
+        countryBottomSheet?.show()
     }
 
     override fun onResume() {
         super.onResume()
+        refreshSelectedServerUi()
     }
 
-    override fun onPause() {
-        super.onPause()
+    private fun showMenu(anchor: View) {
+        PopupMenu(this, anchor, Gravity.END).apply {
+            menuInflater.inflate(R.menu.menu_main_locked, menu)
+            setOnMenuItemClickListener { item ->
+                when (item.itemId) {
+                    R.id.about -> {
+                        startActivity(Intent(this@MainActivity, AboutActivity::class.java))
+                        true
+                    }
+                    else -> false
+                }
+            }
+            show()
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu): Boolean {
@@ -214,8 +286,8 @@ class MainActivity : HelperBaseActivity() {
         return super.onKeyDown(keyCode, event)
     }
 
-
     override fun onDestroy() {
+        countryBottomSheet?.dismiss()
         super.onDestroy()
     }
 }

@@ -21,6 +21,18 @@
     <string name="toast_services_success">Connected</string>
     <string name="toast_services_failure">Connection failed</string>
 
+    <!-- VPN main screen -->
+    <string name="vpn_header_title">VPN</string>
+    <string name="vpn_speed">Speed</string>
+    <string name="vpn_download">Download</string>
+    <string name="vpn_upload">Upload</string>
+    <string name="vpn_location">Location</string>
+    <string name="vpn_connected">Connected</string>
+    <string name="vpn_disconnected">Disconnected</string>
+    <string name="vpn_choose_country">Choose Country</string>
+    <string name="vpn_mbps">mbps</string>
+    <string name="vpn_select_location">Select a location</string>
+
     <!--ServerActivity-->
     <string name="title_server">Servers</string>
     <string name="menu_item_add_config">Add config</string>
