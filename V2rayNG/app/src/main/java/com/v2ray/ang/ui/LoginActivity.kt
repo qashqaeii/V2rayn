@@ -44,14 +44,16 @@ class LoginActivity : BaseActivity() {
         val password = binding.etPassword.text.toString()
 
         if (username.isEmpty()) {
-            binding.etUsername.error = getString(R.string.username_required)
+            binding.tilUsername.error = getString(R.string.username_required)
             return
         }
+        binding.tilUsername.error = null
 
         if (password.isEmpty()) {
-            binding.etPassword.error = getString(R.string.password_required)
+            binding.tilPassword.error = getString(R.string.password_required)
             return
         }
+        binding.tilPassword.error = null
 
         binding.btnLogin.isEnabled = false
         showLoading()

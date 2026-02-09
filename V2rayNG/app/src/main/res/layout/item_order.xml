@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginTop="@dimen/padding_spacing_dp8"
+    android:layout_marginBottom="@dimen/padding_spacing_dp4">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="@dimen/padding_spacing_dp12">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/order_plan_type"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/item_order_plan"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="حرفه‌ای" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="@dimen/padding_spacing_dp4">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="@string/order_status" />
+            <TextView
+                android:id="@+id/item_order_status"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                tools:text="در انتظار تایید" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/item_order_tracking"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_spacing_dp4"
+            android:visibility="gone"
+            tools:text="کد پیگیری: 12345"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/item_order_date"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/padding_spacing_dp4"
+            android:textAppearance="@style/TextAppearance.AppCompat.Caption"
+            tools:text="1403/01/01" />
+    </LinearLayout>
+</androidx.cardview.widget.CardView>

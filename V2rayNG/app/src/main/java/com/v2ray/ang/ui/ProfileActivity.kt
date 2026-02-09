@@ -1,6 +1,5 @@
 package com.v2ray.ang.ui
 
-import android.app.Activity
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -8,14 +7,16 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.v2ray.ang.R
 import com.v2ray.ang.api.SubscriptionOrderDto
 import com.v2ray.ang.api.UserProfileDto
 import com.v2ray.ang.api.VpnServersRepository
 import com.v2ray.ang.databinding.ActivityProfileBinding
 import com.v2ray.ang.handler.MmkvManager
-import com.v2ray.ang.util.JsonUtil
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
@@ -23,6 +24,7 @@ import java.util.Locale
 class ProfileActivity : BaseActivity() {
     private lateinit var binding: ActivityProfileBinding
     private val repository = VpnServersRepository()
+    private val ordersAdapter = OrdersAdapter()
     private var selectedImageUri: Uri? = null
 
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
@@ -62,6 +64,9 @@ class ProfileActivity : BaseActivity() {
         binding.btnLogout.setOnClickListener {
             logout()
         }
+
+        binding.recyclerOrders.layoutManager = LinearLayoutManager(this)
+        binding.recyclerOrders.adapter = ordersAdapter
     }
 
     private fun loadProfile() {
@@ -80,12 +85,13 @@ class ProfileActivity : BaseActivity() {
         binding.tvSubscriptionStatus.text = profile.subscriptionStatusDisplay
         binding.tvCanAccessPro.text = if (profile.canAccessProServers) getString(R.string.yes) else getString(R.string.no)
 
-        if (profile.subscriptionEndDate != null) {
+        if (!profile.subscriptionEndDate.isNullOrBlank()) {
             try {
+                val raw = profile.subscriptionEndDate.replace("Z", "").substringBefore(".")
                 val dateFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
-                val endDate = dateFormat.parse(profile.subscriptionEndDate)
+                val endDate = dateFormat.parse(raw)
                 val displayFormat = SimpleDateFormat("yyyy/MM/dd", Locale.getDefault())
-                binding.tvSubscriptionEnd.text = displayFormat.format(endDate)
+                binding.tvSubscriptionEnd.text = if (endDate != null) displayFormat.format(endDate) else profile.subscriptionEndDate
             } catch (e: Exception) {
                 binding.tvSubscriptionEnd.text = profile.subscriptionEndDate
             }
@@ -114,16 +120,17 @@ class ProfileActivity : BaseActivity() {
         } else {
             binding.tvOrdersEmpty.visibility = View.GONE
             binding.recyclerOrders.visibility = View.VISIBLE
-            // TODO: Add RecyclerView adapter for orders
+            ordersAdapter.submitList(orders)
         }
     }
 
     private fun submitOrder() {
         val trackingCode = binding.etTrackingCode.text.toString().trim()
         if (trackingCode.isEmpty()) {
-            binding.etTrackingCode.error = getString(R.string.tracking_code_required)
+            binding.tilTrackingCode.error = getString(R.string.tracking_code_required)
             return
         }
+        binding.tilTrackingCode.error = null
 
         if (selectedImageUri == null) {
             Toast.makeText(this, getString(R.string.receipt_image_required), Toast.LENGTH_SHORT).show()
@@ -135,17 +142,18 @@ class ProfileActivity : BaseActivity() {
 
         lifecycleScope.launch {
             try {
-                val inputStream = contentResolver.openInputStream(selectedImageUri!!)
-                val bytes = inputStream?.readBytes()
-                inputStream?.close()
-                
-                val tempFile = File(cacheDir, "receipt_${System.currentTimeMillis()}.jpg")
-                tempFile.writeBytes(bytes ?: ByteArray(0))
-                
+                val tempFile = withContext(Dispatchers.IO) {
+                    val inputStream = contentResolver.openInputStream(selectedImageUri!!)
+                    val bytes = inputStream?.readBytes()
+                    inputStream?.close()
+                    val file = File(cacheDir, "receipt_${System.currentTimeMillis()}.jpg")
+                    file.writeBytes(bytes ?: ByteArray(0))
+                    file
+                }
                 repository.createOrder(trackingCode, tempFile)
                 Toast.makeText(this@ProfileActivity, getString(R.string.order_submitted), Toast.LENGTH_SHORT).show()
                 binding.layoutUpgrade.visibility = View.GONE
-                binding.etTrackingCode.text.clear()
+                binding.etTrackingCode.text?.clear()
                 selectedImageUri = null
                 binding.ivReceipt.visibility = View.GONE
                 loadOrders()
