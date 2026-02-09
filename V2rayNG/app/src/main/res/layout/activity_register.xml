@@ -46,8 +46,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="text"
-                android:maxLines="1"
-                android:minLength="3" />
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -57,17 +56,15 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_spacing_dp16"
             android:hint="@string/login_password"
-            android:endIconMode="password_toggle"
-            app:startIconDrawable="@android:drawable/ic_lock_lock"
-            app:passwordToggleEnabled="true">
+            app:endIconMode="password_toggle"
+            app:startIconDrawable="@android:drawable/ic_lock_lock">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:inputType="textPassword"
-                android:maxLines="1"
-                android:minLength="8" />
+                android:maxLines="1" />
         </com.google.android.material.textfield.TextInputLayout>
 
         <com.google.android.material.textfield.TextInputLayout
@@ -77,9 +74,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/padding_spacing_dp16"
             android:hint="@string/register_password_confirm"
-            android:endIconMode="password_toggle"
-            app:startIconDrawable="@android:drawable/ic_lock_lock"
-            app:passwordToggleEnabled="true">
+            app:endIconMode="password_toggle"
+            app:startIconDrawable="@android:drawable/ic_lock_lock">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password_confirm"
