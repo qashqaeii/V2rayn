@@ -118,6 +118,10 @@ class MainActivity : HelperBaseActivity() {
 
     private fun setupViewModel() {
         mainViewModel.updateTestResultAction.observe(this) { setStatusText(it) }
+        mainViewModel.speedLiveData.observe(this) { (upload, download) ->
+            binding.tvUploadSpeed.text = upload
+            binding.tvDownloadSpeed.text = download
+        }
         mainViewModel.isRunning.observe(this) { isRunning ->
             applyRunningState(false, isRunning)
         }
@@ -271,6 +275,7 @@ class MainActivity : HelperBaseActivity() {
             }
             countryBottomSheet?.dismiss()
         }
+        sheetBinding.recyclerCountries.layoutManager = androidx.recyclerview.widget.LinearLayoutManager(this)
         sheetBinding.recyclerCountries.adapter = adapter
         adapter.updateList(list.toList())
         countryBottomSheet?.show()

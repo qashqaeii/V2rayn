@@ -16,6 +16,7 @@ import com.v2ray.ang.R
 import com.v2ray.ang.dto.ProfileItem
 import com.v2ray.ang.extension.toSpeedString
 import com.v2ray.ang.ui.MainActivity
+import com.v2ray.ang.util.MessageUtil
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -54,10 +55,14 @@ object NotificationManager {
                 val queryTime = System.currentTimeMillis()
                 val sinceLastQueryInSeconds = (queryTime - lastQueryTime) / 1000.0
                 var proxyTotal = 0L
+                var proxyUpPerSec = 0.0
+                var proxyDownPerSec = 0.0
                 val text = StringBuilder()
                 outboundTags?.forEach {
                     val up = V2RayServiceManager.queryStats(it, AppConfig.UPLINK)
                     val down = V2RayServiceManager.queryStats(it, AppConfig.DOWNLINK)
+                    proxyUpPerSec += up / sinceLastQueryInSeconds
+                    proxyDownPerSec += down / sinceLastQueryInSeconds
                     if (up + down > 0) {
                         appendSpeedString(text, it, up / sinceLastQueryInSeconds, down / sinceLastQueryInSeconds)
                         proxyTotal += up + down
@@ -76,9 +81,14 @@ object NotificationManager {
                     )
                     updateNotification(text.toString(), proxyTotal, directDownlink + directUplink)
                 }
+                getService()?.applicationContext?.let { ctx ->
+                    val uploadStr = proxyUpPerSec.toLong().toSpeedString()
+                    val downloadStr = proxyDownPerSec.toLong().toSpeedString()
+                    MessageUtil.sendMsg2UI(ctx, AppConfig.MSG_SPEED_UPDATE, "$uploadStr,$downloadStr")
+                }
                 lastZeroSpeed = zeroSpeed
                 lastQueryTime = queryTime
-                delay(3000)
+                delay(1000)
             }
         }
     }

@@ -47,6 +47,8 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val updateListAction by lazy { MutableLiveData<Int>() }
     val updateTestResultAction by lazy { MutableLiveData<String>() }
     val apiSyncState by lazy { MutableLiveData<ApiSyncState>() }
+    /** سرعت آپلود و دانلود برای نمایش در UI (اول: آپلود، دوم: دانلود) */
+    val speedLiveData by lazy { MutableLiveData<Pair<String, String>>(Pair("—", "—")) }
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
     private val vpnServersRepository by lazy { VpnServersRepository() }
 
@@ -493,6 +495,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
                     isRunning.value = false
+                    speedLiveData.value = Pair("—", "—")
                 }
 
                 AppConfig.MSG_STATE_START_SUCCESS -> {
@@ -507,6 +510,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
                     isRunning.value = false
+                    speedLiveData.value = Pair("—", "—")
                 }
 
                 AppConfig.MSG_MEASURE_DELAY_SUCCESS -> {
@@ -529,6 +533,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val content = intent.getStringExtra("content")
                     if (content == "0") {
                         onTestsFinished()
+                    }
+                }
+
+                AppConfig.MSG_SPEED_UPDATE -> {
+                    val content = intent.getStringExtra("content") ?: return@onReceive
+                    val parts = content.split(",", limit = 2)
+                    if (parts.size == 2) {
+                        speedLiveData.value = Pair(parts[0].trim(), parts[1].trim())
                     }
                 }
             }

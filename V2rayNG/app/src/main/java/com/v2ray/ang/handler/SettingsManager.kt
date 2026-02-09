@@ -415,6 +415,10 @@ object SettingsManager {
         ensureDefaultValue(AppConfig.PREF_MUX_XUDP_CONCURRENCY, "8")
         ensureDefaultValue(AppConfig.PREF_FRAGMENT_LENGTH, "50-100")
         ensureDefaultValue(AppConfig.PREF_FRAGMENT_INTERVAL, "10-20")
+        if (MmkvManager.decodeSettingsString(AppConfig.PREF_SPEED_ENABLED + "_init").isNullOrEmpty()) {
+            MmkvManager.encodeSettings(AppConfig.PREF_SPEED_ENABLED, true)
+            MmkvManager.encodeSettings(AppConfig.PREF_SPEED_ENABLED + "_init", "1")
+        }
     }
 
     private fun ensureDefaultValue(key: String, default: String) {
