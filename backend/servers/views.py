@@ -1,34 +1,36 @@
 """
-API: list active servers; app config (settings) for admin-managed defaults.
+API: list active servers (auth required); app config for admin-managed defaults.
 """
-from django.utils.decorators import method_decorator
-from django.views.decorators.cache import cache_page
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 
 from servers.models import AppSetting, Server
 from servers.serializers import ServerListSerializer
 
-CACHE_TTL = 60  # seconds
+CACHE_TTL = 60
 
 
 class ServerListView(APIView):
-    """GET /api/servers/ — active servers only, encrypted config, sorted by priority."""
+    """GET /api/servers/ — سرورهای فعال با can_use بر اساس نوع کاربر؛ نیاز به احراز هویت."""
 
-    throttle_scope = "anon"
+    permission_classes = [IsAuthenticated]
+    throttle_scope = "user"
 
-    @method_decorator(cache_page(CACHE_TTL))
     def get(self, request):
         qs = Server.objects.filter(is_active=True).order_by("-priority", "id")
-        serializer = ServerListSerializer(qs, many=True)
+        serializer = ServerListSerializer(qs, many=True, context={"request": request})
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AppConfigView(APIView):
     """GET /api/config/ — key-value app settings. Admin-managed; app applies and does not show UI."""
 
-    throttle_scope = "anon"
+    permission_classes = [IsAuthenticated]
+    throttle_scope = "user"
 
     @method_decorator(cache_page(30))
     def get(self, request):

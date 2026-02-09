@@ -21,9 +21,9 @@ class AppSettingAdmin(admin.ModelAdmin):
 
 @admin.register(Server)
 class ServerAdmin(admin.ModelAdmin):
-    list_display = ["name", "country", "flag_display", "is_active", "priority", "created_at"]
-    list_editable = ["is_active", "priority"]
-    list_filter = ["is_active", "country"]
+    list_display = ["name", "country", "flag_display", "server_type", "is_active", "priority", "created_at"]
+    list_editable = ["is_active", "priority", "server_type"]
+    list_filter = ["is_active", "server_type", "country"]
     search_fields = ["name", "country"]
     ordering = ["-priority", "id"]
     readonly_fields = ["created_at"]

@@ -26,12 +26,25 @@ class AppSetting(models.Model):
 class Server(models.Model):
     """VPN server entry. config_vless is stored plain in DB, encrypted in API response."""
 
+    SERVER_FREE = "free"
+    SERVER_PRO = "pro"
+    SERVER_TYPE_CHOICES = [
+        (SERVER_FREE, "رایگان"),
+        (SERVER_PRO, "حرفه‌ای"),
+    ]
+
     name = models.CharField(max_length=100)
     country = models.CharField(max_length=5)
     flag_emoji = models.CharField(max_length=10)
     config_vless = models.TextField(help_text="Plain VLESS URL; encrypted when sent to app.")
     is_active = models.BooleanField(default=True)
     priority = models.IntegerField(default=0, help_text="Higher = shown first.")
+    server_type = models.CharField(
+        max_length=16,
+        choices=SERVER_TYPE_CHOICES,
+        default=SERVER_FREE,
+        help_text="سرور رایگان برای همه؛ سرور حرفه‌ای فقط برای کاربران Pro.",
+    )
     created_at = models.DateTimeField(auto_now_add=True)
 
     class Meta:
