@@ -65,6 +65,13 @@ class MainActivity : HelperBaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
+        // بررسی لاگین در ابتدا - قبل از هر کار دیگری
+        if (!MmkvManager.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+        
         // تنظیم full screen mode
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
@@ -108,13 +115,6 @@ class MainActivity : HelperBaseActivity() {
         binding.countrySelector.setOnClickListener { openChooseCountrySheet() }
         binding.btnMenu.setOnClickListener { showMenu(it) }
 
-        // بررسی لاگین قبل از ادامه
-        if (!MmkvManager.isLoggedIn()) {
-            startActivity(Intent(this, LoginActivity::class.java))
-            finish()
-            return
-        }
-
         setupGroupTab()
         setupViewModel()
         mainViewModel.syncServersFromApiOnStart()
@@ -146,7 +146,14 @@ class MainActivity : HelperBaseActivity() {
                     binding.progressBar.isVisible = false
                     val msg = state.reason?.takeIf { it.isNotBlank() }
                         ?: getString(R.string.toast_services_failure)
-                    toastError(msg)
+                    // اگر خطای 401 (Unauthorized) باشد، کاربر را به صفحه لاگین بفرست
+                    if (msg.contains("401") || msg.contains("Unauthorized")) {
+                        MmkvManager.logout()
+                        startActivity(Intent(this@MainActivity, LoginActivity::class.java))
+                        finish()
+                    } else {
+                        toastError(msg)
+                    }
                 }
             }
         }
@@ -290,6 +297,12 @@ class MainActivity : HelperBaseActivity() {
 
     override fun onResume() {
         super.onResume()
+        // بررسی لاگین در onResume هم (مثلاً اگر کاربر logout کرده باشد)
+        if (!MmkvManager.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
         refreshSelectedServerUi()
     }
 
