@@ -21,11 +21,15 @@ docker compose -f deploy/docker-compose.server.yml down
 
 ### 3️⃣ اجرای مایگریشن‌های جدید
 
+بعد از کپی کردن فایل‌های به‌روز (از جمله پوشه `accounts/migrations/`):
+
 ```bash
 docker compose -f deploy/docker-compose.server.yml up -d db
 sleep 5
 docker compose -f deploy/docker-compose.server.yml exec -T web python manage.py migrate --noinput
 ```
+
+اگر پیام «Your models in app(s): 'accounts' have changes that are not yet reflected in a migration» دیدید، یعنی فایل مایگریشن جدید (مثلاً `0002_add_help_texts.py`) روی سرور کپی نشده است. بعد از کپی کردن آن، دوباره همان دستور `migrate --noinput` را اجرا کنید.
 
 یا اگر سرویس web هنوز بالا نیست:
 

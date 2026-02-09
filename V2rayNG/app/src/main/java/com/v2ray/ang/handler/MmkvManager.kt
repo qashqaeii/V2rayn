@@ -735,7 +735,8 @@ object MmkvManager {
      * حذف توکن (خروج از حساب).
      */
     fun clearAuthToken(): Boolean {
-        return mainStorage.removeValueForKey(KEY_AUTH_TOKEN)
+        mainStorage.removeValueForKey(KEY_AUTH_TOKEN)
+        return true
     }
 
     /**
@@ -763,7 +764,8 @@ object MmkvManager {
      * حذف پروفایل کاربر.
      */
     fun clearUserProfile(): Boolean {
-        return mainStorage.removeValueForKey(KEY_USER_PROFILE)
+        mainStorage.removeValueForKey(KEY_USER_PROFILE)
+        return true
     }
 
     /**
