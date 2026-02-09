@@ -11,7 +11,11 @@ data class ServerAffiliationInfo(
     // The API server id for this profile (used to identify API-owned entries).
     var apiServerId: String? = null,
     // Country flag code from API (e.g. "de"). UI can convert to emoji locally.
-    var flag: String? = null
+    var flag: String? = null,
+    // Server type: "free" or "pro"
+    var serverType: String? = null,
+    // Whether user can use this server
+    var canUse: Boolean = true
 ) {
     fun getTestDelayString(): String {
         if (testDelayMillis == 0L) {

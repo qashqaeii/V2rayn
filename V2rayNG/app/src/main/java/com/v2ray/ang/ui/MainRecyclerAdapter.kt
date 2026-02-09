@@ -59,12 +59,28 @@ class MainRecyclerAdapter(
             //Name address
             val aff = MmkvManager.decodeServerAffiliationInfo(guid)
             val flagEmoji = aff?.flag?.toFlagEmoji().orEmpty()
+            val canUse = aff?.canUse != false
+            val serverType = aff?.serverType ?: "free"
+            
             holder.itemMainBinding.tvName.text = (flagEmoji + " " + profile.remarks).trim()
             // Locked build: آدرس سرور نمایش داده نشود؛ فقط پرچم، نام و پروتکل.
             holder.itemMainBinding.tvStatistics.text = ""
             holder.itemMainBinding.tvStatistics.visibility = View.GONE
             holder.itemMainBinding.layoutStatsRow.visibility = View.GONE
             holder.itemMainBinding.tvType.text = profile.configType.name
+            
+            // نمایش قفل برای سرورهای Pro غیرفعال
+            if (serverType == "pro" && !canUse) {
+                holder.itemMainBinding.tvName.alpha = 0.5f
+                holder.itemMainBinding.tvType.alpha = 0.5f
+                holder.itemMainBinding.infoContainer.isEnabled = false
+                holder.itemMainBinding.infoContainer.alpha = 0.5f
+            } else {
+                holder.itemMainBinding.tvName.alpha = 1.0f
+                holder.itemMainBinding.tvType.alpha = 1.0f
+                holder.itemMainBinding.infoContainer.isEnabled = true
+                holder.itemMainBinding.infoContainer.alpha = 1.0f
+            }
 
             //TestResult
             holder.itemMainBinding.tvTestResult.text = aff?.getTestDelayString().orEmpty()
@@ -94,7 +110,18 @@ class MainRecyclerAdapter(
             holder.itemMainBinding.layoutMore.visibility = View.GONE
 
             holder.itemMainBinding.infoContainer.setOnClickListener {
-                adapterListener?.onSelectServer(guid)
+                val aff = MmkvManager.decodeServerAffiliationInfo(guid)
+                val canUse = aff?.canUse != false
+                if (canUse) {
+                    adapterListener?.onSelectServer(guid)
+                } else {
+                    // نمایش پیام برای سرورهای قفل شده
+                    android.widget.Toast.makeText(
+                        holder.itemView.context,
+                        holder.itemView.context.getString(R.string.pro_server_locked),
+                        android.widget.Toast.LENGTH_SHORT
+                    ).show()
+                }
             }
         }
  

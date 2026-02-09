@@ -12,6 +12,8 @@ data class ApiServerDto(
     @SerializedName("id") val id: String,
     @SerializedName("name") val name: String,
     @SerializedName("flag") val flag: String?,
-    @SerializedName("config") val config: String
+    @SerializedName("config") val config: String,
+    @SerializedName("server_type") val serverType: String = "free",
+    @SerializedName("can_use") val canUse: Boolean = true
 )
 

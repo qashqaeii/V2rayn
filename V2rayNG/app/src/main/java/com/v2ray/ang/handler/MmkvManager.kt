@@ -30,6 +30,8 @@ object MmkvManager {
     private const val KEY_ANG_CONFIGS = "ANG_CONFIGS"
     private const val KEY_SUB_IDS = "SUB_IDS"
     private const val KEY_WEBDAV_CONFIG = "WEBDAV_CONFIG"
+    private const val KEY_AUTH_TOKEN = "AUTH_TOKEN"
+    private const val KEY_USER_PROFILE = "USER_PROFILE"
 
     //private val profileStorage by lazy { MMKV.mmkvWithID(ID_PROFILE_CONFIG, MMKV.MULTI_PROCESS_MODE) }
     private val mainStorage by lazy { MMKV.mmkvWithID(ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
@@ -213,13 +215,21 @@ object MmkvManager {
     }
 
     /**
-     * Encodes API metadata (id/flag) for a server profile.
+     * Encodes API metadata (id/flag/server_type/can_use) for a server profile.
      */
-    fun encodeServerApiMeta(guid: String, apiServerId: String?, flag: String?) {
+    fun encodeServerApiMeta(
+        guid: String,
+        apiServerId: String?,
+        flag: String?,
+        serverType: String? = null,
+        canUse: Boolean = true
+    ) {
         if (guid.isBlank()) return
         val aff = decodeServerAffiliationInfo(guid) ?: ServerAffiliationInfo()
         aff.apiServerId = apiServerId
         aff.flag = flag
+        aff.serverType = serverType
+        aff.canUse = canUse
         serverAffStorage.encode(guid, JsonUtil.toJson(aff))
     }
 
@@ -701,6 +711,68 @@ object MmkvManager {
     fun decodeWebDavConfig(): WebDavConfig? {
         val json = mainStorage.decodeString(KEY_WEBDAV_CONFIG) ?: return null
         return JsonUtil.fromJson(json, WebDavConfig::class.java)
+    }
+
+    //endregion
+
+    //region Auth
+
+    /**
+     * ذخیره توکن احراز هویت.
+     */
+    fun saveAuthToken(token: String): Boolean {
+        return mainStorage.encode(KEY_AUTH_TOKEN, token)
+    }
+
+    /**
+     * دریافت توکن احراز هویت.
+     */
+    fun getAuthToken(): String? {
+        return mainStorage.decodeString(KEY_AUTH_TOKEN)
+    }
+
+    /**
+     * حذف توکن (خروج از حساب).
+     */
+    fun clearAuthToken(): Boolean {
+        return mainStorage.removeValueForKey(KEY_AUTH_TOKEN)
+    }
+
+    /**
+     * بررسی اینکه آیا کاربر لاگین است یا نه.
+     */
+    fun isLoggedIn(): Boolean {
+        return !getAuthToken().isNullOrEmpty()
+    }
+
+    /**
+     * ذخیره پروفایل کاربر.
+     */
+    fun saveUserProfile(profileJson: String): Boolean {
+        return mainStorage.encode(KEY_USER_PROFILE, profileJson)
+    }
+
+    /**
+     * دریافت پروفایل کاربر.
+     */
+    fun getUserProfileJson(): String? {
+        return mainStorage.decodeString(KEY_USER_PROFILE)
+    }
+
+    /**
+     * حذف پروفایل کاربر.
+     */
+    fun clearUserProfile(): Boolean {
+        return mainStorage.removeValueForKey(KEY_USER_PROFILE)
+    }
+
+    /**
+     * خروج کامل از حساب کاربری.
+     */
+    fun logout(): Boolean {
+        clearAuthToken()
+        clearUserProfile()
+        return true
     }
 
     //endregion

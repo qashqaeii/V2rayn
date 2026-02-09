@@ -44,7 +44,7 @@ object ApiServersImporter {
             profile.remarks = srv.name
             profile.description = AngConfigManager.generateDescription(profile)
             val guid = MmkvManager.encodeServerConfig("", profile)
-            MmkvManager.encodeServerApiMeta(guid, srv.id, srv.flag)
+            MmkvManager.encodeServerApiMeta(guid, srv.id, srv.flag, srv.serverType, srv.canUse)
         }
     }
 

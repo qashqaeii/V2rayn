@@ -108,6 +108,13 @@ class MainActivity : HelperBaseActivity() {
         binding.countrySelector.setOnClickListener { openChooseCountrySheet() }
         binding.btnMenu.setOnClickListener { showMenu(it) }
 
+        // بررسی لاگین قبل از ادامه
+        if (!MmkvManager.isLoggedIn()) {
+            startActivity(Intent(this, LoginActivity::class.java))
+            finish()
+            return
+        }
+
         setupGroupTab()
         setupViewModel()
         mainViewModel.syncServersFromApiOnStart()
@@ -295,6 +302,10 @@ class MainActivity : HelperBaseActivity() {
                         startActivity(Intent(this@MainActivity, AboutActivity::class.java))
                         true
                     }
+                    R.id.profile -> {
+                        startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
+                        true
+                    }
                     else -> false
                 }
             }
@@ -310,6 +321,10 @@ class MainActivity : HelperBaseActivity() {
     override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
         R.id.about -> {
             startActivity(Intent(this, AboutActivity::class.java))
+            true
+        }
+        R.id.profile -> {
+            startActivity(Intent(this, ProfileActivity::class.java))
             true
         }
         else -> super.onOptionsItemSelected(item)
