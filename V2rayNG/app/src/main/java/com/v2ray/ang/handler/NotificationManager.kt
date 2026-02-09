@@ -35,7 +35,58 @@ object NotificationManager {
     private var lastQueryTime = 0L
     private var mBuilder: NotificationCompat.Builder? = null
     private var speedNotificationJob: Job? = null
+    private var speedUpdateToUIJob: Job? = null
     private var mNotificationManager: NotificationManager? = null
+
+    /**
+     * شروع به‌روزرسانی سرعت برای UI (همیشه فعال است، حتی اگر notification غیرفعال باشد)
+     * @param currentConfig پیکربندی پروفایل فعلی
+     */
+    fun startSpeedUpdateToUI(currentConfig: ProfileItem?) {
+        if (speedUpdateToUIJob != null || V2RayServiceManager.isRunning() == false) return
+
+        var lastQueryTimeUI = System.currentTimeMillis()
+        val outboundTags = currentConfig?.getAllOutboundTags()
+        outboundTags?.remove(AppConfig.TAG_DIRECT)
+
+        speedUpdateToUIJob = CoroutineScope(Dispatchers.IO).launch {
+            while (isActive) {
+                val queryTime = System.currentTimeMillis()
+                val sinceLastQueryInSeconds = (queryTime - lastQueryTimeUI) / 1000.0
+                if (sinceLastQueryInSeconds <= 0) {
+                    delay(1000)
+                    continue
+                }
+                
+                var proxyUpPerSec = 0.0
+                var proxyDownPerSec = 0.0
+                
+                outboundTags?.forEach {
+                    val up = V2RayServiceManager.queryStats(it, AppConfig.UPLINK)
+                    val down = V2RayServiceManager.queryStats(it, AppConfig.DOWNLINK)
+                    proxyUpPerSec += up / sinceLastQueryInSeconds
+                    proxyDownPerSec += down / sinceLastQueryInSeconds
+                }
+                
+                getService()?.applicationContext?.let { ctx ->
+                    val uploadStr = proxyUpPerSec.toLong().toSpeedString()
+                    val downloadStr = proxyDownPerSec.toLong().toSpeedString()
+                    MessageUtil.sendMsg2UI(ctx, AppConfig.MSG_SPEED_UPDATE, "$uploadStr,$downloadStr")
+                }
+                
+                lastQueryTimeUI = queryTime
+                delay(1000)
+            }
+        }
+    }
+
+    /**
+     * متوقف کردن به‌روزرسانی سرعت برای UI
+     */
+    fun stopSpeedUpdateToUI() {
+        speedUpdateToUIJob?.cancel()
+        speedUpdateToUIJob = null
+    }
 
     /**
      * Starts the speed notification.
@@ -81,14 +132,9 @@ object NotificationManager {
                     )
                     updateNotification(text.toString(), proxyTotal, directDownlink + directUplink)
                 }
-                getService()?.applicationContext?.let { ctx ->
-                    val uploadStr = proxyUpPerSec.toLong().toSpeedString()
-                    val downloadStr = proxyDownPerSec.toLong().toSpeedString()
-                    MessageUtil.sendMsg2UI(ctx, AppConfig.MSG_SPEED_UPDATE, "$uploadStr,$downloadStr")
-                }
                 lastZeroSpeed = zeroSpeed
                 lastQueryTime = queryTime
-                delay(1000)
+                delay(3000)
             }
         }
     }

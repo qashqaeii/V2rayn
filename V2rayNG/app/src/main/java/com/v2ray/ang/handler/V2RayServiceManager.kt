@@ -168,6 +168,8 @@ object V2RayServiceManager {
             MessageUtil.sendMsg2UI(service, AppConfig.MSG_STATE_START_SUCCESS, "")
             //NotificationManager.showNotification(currentConfig)
             NotificationManager.startSpeedNotification(currentConfig)
+            // شروع به‌روزرسانی سرعت برای UI (همیشه فعال است)
+            NotificationManager.startSpeedUpdateToUI(currentConfig)
 
         } catch (e: Exception) {
             Log.e(AppConfig.TAG, "Failed to startup service", e)
@@ -354,11 +356,13 @@ object V2RayServiceManager {
                 Intent.ACTION_SCREEN_OFF -> {
                     Log.i(AppConfig.TAG, "SCREEN_OFF, stop querying stats")
                     NotificationManager.stopSpeedNotification(currentConfig)
+                    NotificationManager.stopSpeedUpdateToUI()
                 }
 
                 Intent.ACTION_SCREEN_ON -> {
                     Log.i(AppConfig.TAG, "SCREEN_ON, start querying stats")
                     NotificationManager.startSpeedNotification(currentConfig)
+                    NotificationManager.startSpeedUpdateToUI(currentConfig)
                 }
             }
         }

@@ -33,6 +33,8 @@ class CountryListAdapter(
         val flagEmoji = aff?.flag?.toFlagEmoji().orEmpty()
         holder.binding.tvFlag.text = if (flagEmoji.isNotEmpty()) flagEmoji else "🌍"
         holder.binding.tvName.text = item.profile.remarks.ifEmpty { item.guid.take(8) }
+        
+        // تنظیم onClick روی root (MaterialCardView) - MaterialCardView clickable است
         holder.binding.root.setOnClickListener {
             onCountrySelected(item.guid)
         }
