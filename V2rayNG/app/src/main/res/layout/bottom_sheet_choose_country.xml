@@ -26,7 +26,7 @@
         android:id="@+id/recycler_countries"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:maxHeight="400dp"
+        android:minHeight="300dp"
         android:nestedScrollingEnabled="true"
         android:scrollbars="vertical" />
 </LinearLayout>

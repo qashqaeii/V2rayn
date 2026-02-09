@@ -2,17 +2,24 @@ package com.v2ray.ang.ui
 
 import android.content.Intent
 import android.net.VpnService
+import android.os.Build
 import android.os.Bundle
 import android.view.Gravity
 import android.view.KeyEvent
 import android.view.Menu
 import android.view.MenuItem
 import android.view.View
+import android.view.WindowInsetsController
+import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.WindowInsetsControllerCompat
 import androidx.core.view.isVisible
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -57,7 +64,31 @@ class MainActivity : HelperBaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        
+        // تنظیم full screen mode
+        WindowCompat.setDecorFitsSystemWindows(window, false)
+        val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
+        windowInsetsController?.let {
+            it.isAppearanceLightStatusBars = true
+            it.isAppearanceLightNavigationBars = true
+            it.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
+            it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
+        }
+        
         setContentView(binding.root)
+        
+        // اضافه کردن padding برای status bar به LinearLayout اصلی
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.mainContent.setPadding(
+                binding.mainContent.paddingLeft,
+                systemBars.top + resources.getDimensionPixelSize(android.R.dimen.app_icon_size) / 4,
+                binding.mainContent.paddingRight,
+                systemBars.bottom
+            )
+            insets
+        }
+        
         setupToolbar(null, false, null)
 
         groupPagerAdapter = GroupPagerAdapter(this, emptyList())
@@ -230,6 +261,7 @@ class MainActivity : HelperBaseActivity() {
         countryBottomSheet = BottomSheetDialog(this).apply {
             setContentView(sheetBinding.root)
             setCancelable(true)
+            behavior.peekHeight = resources.displayMetrics.heightPixels * 2 / 3
         }
         val adapter = CountryListAdapter(list.toList()) { guid ->
             if (guid != MmkvManager.getSelectServer()) {
