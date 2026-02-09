@@ -32,6 +32,10 @@ object MmkvManager {
     private const val KEY_WEBDAV_CONFIG = "WEBDAV_CONFIG"
     private const val KEY_AUTH_TOKEN = "AUTH_TOKEN"
     private const val KEY_USER_PROFILE = "USER_PROFILE"
+    private const val KEY_SAVED_USERNAME = "SAVED_USERNAME"
+    private const val KEY_SAVED_PASSWORD = "SAVED_PASSWORD"
+    private const val KEY_REMEMBER_ME = "REMEMBER_ME"
+    private const val KEY_HAS_REGISTERED = "HAS_REGISTERED"
 
     //private val profileStorage by lazy { MMKV.mmkvWithID(ID_PROFILE_CONFIG, MMKV.MULTI_PROCESS_MODE) }
     private val mainStorage by lazy { MMKV.mmkvWithID(ID_MAIN, MMKV.MULTI_PROCESS_MODE) }
@@ -774,7 +778,66 @@ object MmkvManager {
     fun logout(): Boolean {
         clearAuthToken()
         clearUserProfile()
+        // اگر Remember Me فعال نباشد، اطلاعات ذخیره شده را پاک کن
+        if (!isRememberMeEnabled()) {
+            clearSavedCredentials()
+        }
         return true
+    }
+
+    /**
+     * ذخیره اطلاعات لاگین برای Remember Me.
+     */
+    fun saveCredentials(username: String, password: String): Boolean {
+        mainStorage.encode(KEY_SAVED_USERNAME, username)
+        mainStorage.encode(KEY_SAVED_PASSWORD, password)
+        return true
+    }
+
+    /**
+     * دریافت اطلاعات لاگین ذخیره شده.
+     */
+    fun getSavedCredentials(): Pair<String?, String?> {
+        val username = mainStorage.decodeString(KEY_SAVED_USERNAME)
+        val password = mainStorage.decodeString(KEY_SAVED_PASSWORD)
+        return Pair(username, password)
+    }
+
+    /**
+     * پاک کردن اطلاعات لاگین ذخیره شده.
+     */
+    fun clearSavedCredentials(): Boolean {
+        mainStorage.removeValueForKey(KEY_SAVED_USERNAME)
+        mainStorage.removeValueForKey(KEY_SAVED_PASSWORD)
+        return true
+    }
+
+    /**
+     * فعال/غیرفعال کردن Remember Me.
+     */
+    fun setRememberMe(enabled: Boolean): Boolean {
+        return settingsStorage.encode(KEY_REMEMBER_ME, enabled)
+    }
+
+    /**
+     * بررسی اینکه آیا Remember Me فعال است یا نه.
+     */
+    fun isRememberMeEnabled(): Boolean {
+        return settingsStorage.decodeBool(KEY_REMEMBER_ME, false)
+    }
+
+    /**
+     * علامت‌گذاری که کاربر قبلاً ثبت‌نام کرده است.
+     */
+    fun setHasRegistered(hasRegistered: Boolean): Boolean {
+        return settingsStorage.encode(KEY_HAS_REGISTERED, hasRegistered)
+    }
+
+    /**
+     * بررسی اینکه آیا کاربر قبلاً ثبت‌نام کرده است یا نه.
+     */
+    fun hasRegistered(): Boolean {
+        return settingsStorage.decodeBool(KEY_HAS_REGISTERED, false)
     }
 
     //endregion

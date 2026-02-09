@@ -5,9 +5,39 @@ from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth import authenticate
 
-from accounts.models import SubscriptionOrder, UserProfile
+from accounts.models import SubscriptionOrder, SubscriptionPlan, UserProfile
 
 User = get_user_model()
+
+
+class RegisterSerializer(serializers.Serializer):
+    username = serializers.CharField(min_length=3, max_length=150)
+    password = serializers.CharField(
+        min_length=8,
+        write_only=True,
+        style={"input_type": "password"},
+    )
+    password_confirm = serializers.CharField(
+        write_only=True,
+        style={"input_type": "password"},
+    )
+
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("این نام کاربری قبلاً استفاده شده است.")
+        return value
+
+    def validate(self, attrs):
+        if attrs.get("password") != attrs.get("password_confirm"):
+            raise serializers.ValidationError({"password_confirm": "رمز عبور و تکرار آن یکسان نیستند."})
+        return attrs
+
+    def create(self, validated_data):
+        user = User.objects.create_user(
+            username=validated_data["username"],
+            password=validated_data["password"],
+        )
+        return user
 
 
 class LoginSerializer(serializers.Serializer):
@@ -84,4 +114,15 @@ class SubscriptionOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
+        # اگر پلن انتخاب نشده، پلن پیش‌فرض Pro را پیدا کن
+        if not validated_data.get("plan"):
+            plan = SubscriptionPlan.objects.filter(plan_type=SubscriptionPlan.PLAN_PRO, is_active=True).first()
+            if plan:
+                validated_data["plan"] = plan
         return super().create(validated_data)
+
+
+class SubscriptionPlanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = SubscriptionPlan
+        fields = ["id", "plan_type", "price", "duration_days", "description", "is_active"]

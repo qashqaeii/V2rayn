@@ -35,5 +35,18 @@ interface VpnServersApi {
         @Part("payment_tracking_code") trackingCode: RequestBody,
         @Part receiptImage: MultipartBody.Part?
     ): SubscriptionOrderDto
+
+    /** ثبت‌نام کاربر جدید */
+    @POST("auth/register/")
+    @FormUrlEncoded
+    suspend fun register(
+        @Field("username") username: String,
+        @Field("password") password: String,
+        @Field("password_confirm") passwordConfirm: String
+    ): LoginResponse
+
+    /** دریافت پلن‌های اشتراک */
+    @GET("plans/")
+    suspend fun getPlans(): List<SubscriptionPlanDto>
 }
 

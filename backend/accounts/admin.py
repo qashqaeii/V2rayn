@@ -5,7 +5,7 @@ from django.contrib import admin
 from django.utils import timezone
 from django.utils.html import format_html
 
-from accounts.models import SubscriptionOrder, UserProfile
+from accounts.models import SubscriptionOrder, SubscriptionPlan, UserProfile
 
 
 @admin.register(UserProfile)
@@ -33,6 +33,7 @@ class UserProfileAdmin(admin.ModelAdmin):
 def approve_orders(modeladmin, request, queryset):
     """تایید سفارش: کاربر را Pro می‌کند و تاریخ اشتراک را تنظیم می‌کند."""
     from accounts.models import UserProfile
+    from datetime import timedelta
 
     now = timezone.now()
     for order in queryset.filter(status=SubscriptionOrder.STATUS_PENDING):
@@ -45,9 +46,10 @@ def approve_orders(modeladmin, request, queryset):
         profile.account_type = UserProfile.ACCOUNT_PRO
         profile.subscription_status = UserProfile.SUBSCRIPTION_ACTIVE
         profile.subscription_start_date = now
-        from datetime import timedelta
-
-        profile.subscription_end_date = now + timedelta(days=SubscriptionOrder.PRO_PLAN_DAYS)
+        
+        # استفاده از مدت اعتبار از پلن یا مقدار پیش‌فرض
+        duration_days = order.plan.duration_days if order.plan else 30
+        profile.subscription_end_date = now + timedelta(days=duration_days)
         profile.can_access_pro_servers = True
         profile.save(
             update_fields=[
@@ -71,12 +73,21 @@ approve_orders.short_description = "تایید سفارش‌های انتخاب�
 reject_orders.short_description = "رد سفارش‌های انتخاب‌شده"
 
 
+@admin.register(SubscriptionPlan)
+class SubscriptionPlanAdmin(admin.ModelAdmin):
+    list_display = ["plan_type", "price", "duration_days", "is_active", "updated_at"]
+    list_editable = ["price", "duration_days", "is_active"]
+    search_fields = ["plan_type"]
+    readonly_fields = ["created_at", "updated_at"]
+
+
 @admin.register(SubscriptionOrder)
 class SubscriptionOrderAdmin(admin.ModelAdmin):
     list_display = [
         "id",
         "user",
         "plan_type",
+        "plan",
         "status_display",
         "payment_tracking_code",
         "created_at",
@@ -85,7 +96,7 @@ class SubscriptionOrderAdmin(admin.ModelAdmin):
     ]
     list_filter = ["status", "plan_type"]
     search_fields = ["user__username", "payment_tracking_code"]
-    raw_id_fields = ["user", "approved_by"]
+    raw_id_fields = ["user", "approved_by", "plan"]
     readonly_fields = ["created_at", "approved_at", "approved_by"]
     actions = [approve_orders, reject_orders]
 

@@ -71,6 +71,14 @@ class VpnServersRepository {
         return api.createOrder(trackingCodeBody, imagePart)
     }
 
+    suspend fun register(username: String, password: String, passwordConfirm: String): LoginResponse {
+        return api.register(username, password, passwordConfirm)
+    }
+
+    suspend fun getPlans(): List<SubscriptionPlanDto> {
+        return api.getPlans()
+    }
+
     private fun OkHttpClient.Builder.applyCertificatePinning(): OkHttpClient.Builder {
         val host = BuildConfig.VPN_API_HOST.trim()
         val pins = BuildConfig.VPN_API_CERT_PINS

@@ -10,6 +10,7 @@ import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.v2ray.ang.R
 import com.v2ray.ang.api.SubscriptionOrderDto
+import com.v2ray.ang.api.SubscriptionPlanDto
 import com.v2ray.ang.api.UserProfileDto
 import com.v2ray.ang.api.VpnServersRepository
 import com.v2ray.ang.databinding.ActivityProfileBinding
@@ -18,6 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.io.File
+import java.text.DecimalFormat
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -26,6 +28,7 @@ class ProfileActivity : BaseActivity() {
     private val repository = VpnServersRepository()
     private val ordersAdapter = OrdersAdapter()
     private var selectedImageUri: Uri? = null
+    private var currentPlan: SubscriptionPlanDto? = null
 
     private val imagePickerLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let {
@@ -47,10 +50,16 @@ class ProfileActivity : BaseActivity() {
         }
 
         loadProfile()
+        loadPlans()
         loadOrders()
 
         binding.btnUpgrade.setOnClickListener {
-            binding.layoutUpgrade.visibility = View.VISIBLE
+            if (currentPlan != null) {
+                binding.cardUpgrade.visibility = View.VISIBLE
+                displayPlanInfo(currentPlan!!)
+            } else {
+                Toast.makeText(this, getString(R.string.failed_to_load_plans), Toast.LENGTH_SHORT).show()
+            }
         }
 
         binding.btnSelectReceipt.setOnClickListener {
@@ -100,6 +109,27 @@ class ProfileActivity : BaseActivity() {
         }
 
         binding.btnUpgrade.visibility = if (profile.accountType == "free") View.VISIBLE else View.GONE
+    }
+
+    private fun loadPlans() {
+        lifecycleScope.launch {
+            try {
+                val plans = repository.getPlans()
+                currentPlan = plans.firstOrNull { it.planType == "pro" && it.isActive }
+            } catch (e: Exception) {
+                // Silent fail for plans
+            }
+        }
+    }
+
+    private fun displayPlanInfo(plan: SubscriptionPlanDto) {
+        binding.layoutPlanInfo.visibility = View.VISIBLE
+        binding.tvPlanPrice.text = String.format(Locale.getDefault(), getString(R.string.plan_toman), formatPrice(plan.price))
+        binding.tvPlanDuration.text = String.format(Locale.getDefault(), getString(R.string.plan_days), plan.durationDays)
+    }
+
+    private fun formatPrice(price: Double): String {
+        return String.format(Locale.getDefault(), "%,.0f", price)
     }
 
     private fun loadOrders() {
@@ -152,11 +182,12 @@ class ProfileActivity : BaseActivity() {
                 }
                 repository.createOrder(trackingCode, tempFile)
                 Toast.makeText(this@ProfileActivity, getString(R.string.order_submitted), Toast.LENGTH_SHORT).show()
-                binding.layoutUpgrade.visibility = View.GONE
+                binding.cardUpgrade.visibility = View.GONE
                 binding.etTrackingCode.text?.clear()
                 selectedImageUri = null
                 binding.ivReceipt.visibility = View.GONE
                 loadOrders()
+                loadProfile() // Refresh profile to check if upgraded
             } catch (e: Exception) {
                 Toast.makeText(this@ProfileActivity, getString(R.string.order_submit_failed) + ": " + e.message, Toast.LENGTH_LONG).show()
             } finally {
@@ -168,6 +199,8 @@ class ProfileActivity : BaseActivity() {
 
     private fun logout() {
         MmkvManager.logout()
+        // بعد از logout، کاربر باید دوباره لاگین کند (نه ثبت‌نام)
+        // پس hasRegistered را true نگه می‌داریم
         startActivity(Intent(this, LoginActivity::class.java))
         finish()
     }

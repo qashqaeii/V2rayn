@@ -67,6 +67,47 @@ class UserProfile(models.Model):
         return True
 
 
+class SubscriptionPlan(models.Model):
+    """پلن اشتراک: قیمت و مدت اعتبار."""
+
+    PLAN_PRO = "pro"
+    PLAN_CHOICES = [(PLAN_PRO, "حرفه‌ای")]
+
+    plan_type = models.CharField(
+        max_length=16,
+        choices=PLAN_CHOICES,
+        default=PLAN_PRO,
+        unique=True,
+    )
+    price = models.DecimalField(
+        max_digits=10,
+        decimal_places=2,
+        default=0.00,
+        help_text="قیمت به تومان",
+    )
+    duration_days = models.IntegerField(
+        default=30,
+        help_text="مدت اعتبار به روز",
+    )
+    is_active = models.BooleanField(
+        default=True,
+        help_text="آیا این پلن فعال است؟",
+    )
+    description = models.TextField(
+        blank=True,
+        help_text="توضیحات پلن",
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        verbose_name = "پلن اشتراک"
+        verbose_name_plural = "پلن‌های اشتراک"
+
+    def __str__(self):
+        return f"{self.get_plan_type_display()} - {self.price} تومان - {self.duration_days} روز"
+
+
 class SubscriptionOrder(models.Model):
     """سفارش خرید اشتراک (کارت به کارت)؛ تایید توسط ادمین."""
 
@@ -81,9 +122,6 @@ class SubscriptionOrder(models.Model):
         (STATUS_APPROVED, "تایید شده"),
         (STATUS_REJECTED, "رد شده"),
     ]
-
-    # مدت اشتراک پرو به روز (قابل تغییر از تنظیمات)
-    PRO_PLAN_DAYS = 30
 
     user = models.ForeignKey(
         settings.AUTH_USER_MODEL,
@@ -115,6 +153,14 @@ class SubscriptionOrder(models.Model):
         null=True,
         blank=True,
         related_name="approved_orders",
+    )
+    plan = models.ForeignKey(
+        "SubscriptionPlan",
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="orders",
+        help_text="پلن انتخابی کاربر",
     )
 
     class Meta:

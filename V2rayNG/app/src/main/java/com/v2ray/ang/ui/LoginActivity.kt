@@ -2,9 +2,12 @@ package com.v2ray.ang.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.text.method.PasswordTransformationMethod
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.textfield.TextInputLayout
 import com.v2ray.ang.R
 import com.v2ray.ang.api.LoginResponse
 import com.v2ray.ang.api.VpnServersRepository
@@ -16,6 +19,7 @@ import kotlinx.coroutines.launch
 class LoginActivity : BaseActivity() {
     private lateinit var binding: ActivityLoginBinding
     private val repository = VpnServersRepository()
+    private var isPasswordVisible = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,6 +33,19 @@ class LoginActivity : BaseActivity() {
             return
         }
 
+        // اگر کاربر جدید است (هنوز ثبت‌نام نکرده)، به صفحه ثبت‌نام بفرست
+        if (!MmkvManager.hasRegistered()) {
+            startActivity(Intent(this, RegisterActivity::class.java))
+            finish()
+            return
+        }
+
+        // بارگذاری اطلاعات ذخیره شده (Remember Me)
+        loadSavedCredentials()
+
+        // تنظیم آیکون چشم برای نمایش/مخفی کردن رمز عبور
+        setupPasswordToggle()
+
         binding.btnLogin.setOnClickListener {
             attemptLogin()
         }
@@ -36,6 +53,35 @@ class LoginActivity : BaseActivity() {
         binding.etPassword.setOnEditorActionListener { _, _, _ ->
             attemptLogin()
             true
+        }
+
+        binding.tvRegisterLink.setOnClickListener {
+            startActivity(Intent(this, RegisterActivity::class.java))
+        }
+    }
+
+    private fun loadSavedCredentials() {
+        if (MmkvManager.isRememberMeEnabled()) {
+            val (username, password) = MmkvManager.getSavedCredentials()
+            username?.let { binding.etUsername.setText(it) }
+            password?.let { binding.etPassword.setText(it) }
+            binding.cbRemember.isChecked = true
+        }
+    }
+
+    private fun setupPasswordToggle() {
+        binding.tilPassword.setEndIconOnClickListener {
+            isPasswordVisible = !isPasswordVisible
+            val editText = binding.etPassword
+            if (isPasswordVisible) {
+                editText.transformationMethod = null
+                binding.tilPassword.endIconDrawable = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_view)
+            } else {
+                editText.transformationMethod = PasswordTransformationMethod()
+                binding.tilPassword.endIconDrawable = ContextCompat.getDrawable(this, android.R.drawable.ic_menu_view)
+            }
+            // انتقال cursor به انتهای متن
+            editText.setSelection(editText.text?.length ?: 0)
         }
     }
 
@@ -61,7 +107,7 @@ class LoginActivity : BaseActivity() {
         lifecycleScope.launch {
             try {
                 val response = repository.login(username, password)
-                saveLoginData(response)
+                saveLoginData(response, username, password)
                 Toast.makeText(this@LoginActivity, getString(R.string.login_success), Toast.LENGTH_SHORT).show()
                 startActivity(Intent(this@LoginActivity, MainActivity::class.java))
                 finish()
@@ -74,8 +120,20 @@ class LoginActivity : BaseActivity() {
         }
     }
 
-    private fun saveLoginData(response: LoginResponse) {
+    private fun saveLoginData(response: LoginResponse, username: String, password: String) {
         MmkvManager.saveAuthToken(response.token)
         MmkvManager.saveUserProfile(JsonUtil.toJson(response.user.profile))
+        
+        // علامت‌گذاری که کاربر لاگین کرده است (یعنی قبلاً ثبت‌نام کرده)
+        MmkvManager.setHasRegistered(true)
+        
+        // ذخیره اطلاعات برای Remember Me
+        val rememberMe = binding.cbRemember.isChecked
+        MmkvManager.setRememberMe(rememberMe)
+        if (rememberMe) {
+            MmkvManager.saveCredentials(username, password)
+        } else {
+            MmkvManager.clearSavedCredentials()
+        }
     }
 }

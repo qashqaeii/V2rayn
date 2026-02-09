@@ -7,14 +7,45 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from accounts.models import UserProfile
+from accounts.models import SubscriptionOrder, SubscriptionPlan, UserProfile
 from accounts.serializers import (
     LoginSerializer,
+    RegisterSerializer,
+    SubscriptionPlanSerializer,
     UserWithProfileSerializer,
     UserProfileSerializer,
     SubscriptionOrderSerializer,
 )
-from accounts.models import SubscriptionOrder
+
+
+class RegisterView(APIView):
+    """POST /api/auth/register/ — ثبت‌نام کاربر جدید."""
+
+    permission_classes = [AllowAny]
+
+    def post(self, request):
+        serializer = RegisterSerializer(data=request.data)
+        if not serializer.is_valid():
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        user = serializer.save()
+        # ایجاد پروفایل رایگان برای کاربر جدید
+        profile, _ = UserProfile.objects.get_or_create(
+            user=user,
+            defaults={
+                "account_type": UserProfile.ACCOUNT_FREE,
+                "subscription_status": UserProfile.SUBSCRIPTION_NONE,
+                "can_access_pro_servers": False,
+            },
+        )
+        token, _ = Token.objects.get_or_create(user=user)
+        user_serializer = UserWithProfileSerializer(user)
+        return Response(
+            {
+                "token": token.key,
+                "user": user_serializer.data,
+            },
+            status=status.HTTP_201_CREATED,
+        )
 
 
 class LoginView(APIView):
@@ -85,3 +116,16 @@ class SubscriptionOrderListCreateView(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         serializer.save()
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+class SubscriptionPlanView(APIView):
+    """GET /api/plans/ — لیست پلن‌های فعال اشتراک."""
+
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        plans = SubscriptionPlan.objects.filter(is_active=True)
+        return Response(
+            SubscriptionPlanSerializer(plans, many=True).data,
+            status=status.HTTP_200_OK,
+        )
