@@ -353,8 +353,7 @@
                         app:cardCornerRadius="20dp"
                         app:cardElevation="4dp"
                         app:strokeWidth="0dp"
-                        app:rippleColor="@color/accent_primary"
-                        app:rippleAlpha="0.2">
+                        app:rippleColor="@color/accent_primary">
 
                         <LinearLayout
                             android:layout_width="match_parent"
