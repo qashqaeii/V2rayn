@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/md_theme_background"
+    android:background="@drawable/bg_gradient_main"
     android:fitsSystemWindows="false">
 
     <ScrollView
@@ -36,10 +36,13 @@
                 android:layout_height="match_parent"
                 android:layout_marginTop="0dp"
                 android:layout_marginBottom="0dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginEnd="0dp"
                 app:cardBackgroundColor="@color/vpn_card_white"
-                app:cardCornerRadius="0dp"
-                app:cardElevation="0dp"
-                app:strokeWidth="0dp">
+                app:cardCornerRadius="32dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="0dp"
+                app:strokeColor="@android:color/transparent">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -55,17 +58,27 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_vertical"
-                        android:orientation="horizontal">
+                        android:orientation="horizontal"
+                        android:paddingTop="8dp"
+                        android:paddingBottom="8dp">
 
-                        <ImageButton
-                            android:id="@+id/btn_menu"
-                            android:layout_width="40dp"
-                            android:layout_height="40dp"
-                            android:background="?attr/selectableItemBackgroundBorderless"
-                            android:contentDescription="@string/navigation_drawer_open"
-                            android:padding="8dp"
-                            android:src="@drawable/ic_menu_24dp"
-                            android:scaleType="centerInside" />
+                        <com.google.android.material.card.MaterialCardView
+                            android:layout_width="48dp"
+                            android:layout_height="48dp"
+                            app:cardCornerRadius="24dp"
+                            app:cardElevation="2dp"
+                            app:strokeWidth="0dp">
+                            <ImageButton
+                                android:id="@+id/btn_menu"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="?attr/selectableItemBackgroundBorderless"
+                                android:contentDescription="@string/navigation_drawer_open"
+                                android:padding="12dp"
+                                android:src="@drawable/ic_menu_24dp"
+                                android:scaleType="centerInside"
+                                android:tint="@color/md_theme_onBackground" />
+                        </com.google.android.material.card.MaterialCardView>
 
                         <TextView
                             android:layout_width="0dp"
@@ -74,12 +87,13 @@
                             android:gravity="center"
                             android:text="@string/vpn_header_title"
                             android:textColor="@color/md_theme_onBackground"
-                            android:textSize="20sp"
-                            android:textStyle="bold" />
+                            android:textSize="24sp"
+                            android:textStyle="bold"
+                            android:letterSpacing="0.02" />
 
                         <View
-                            android:layout_width="40dp"
-                            android:layout_height="40dp" />
+                            android:layout_width="48dp"
+                            android:layout_height="48dp" />
                     </LinearLayout>
 
                     <!-- Power button with ring -->
@@ -87,51 +101,81 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="24dp">
+                        android:layout_marginTop="32dp">
 
+                        <!-- Outer glow ring -->
                         <View
+                            android:layout_width="180dp"
+                            android:layout_height="180dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/bg_power_button_ring"
+                            android:alpha="0.3" />
+
+                        <!-- Middle ring -->
+                        <View
+                            android:layout_width="160dp"
+                            android:layout_height="160dp"
+                            android:layout_gravity="center"
+                            android:background="@drawable/bg_power_button_ring"
+                            android:alpha="0.5" />
+
+                        <!-- Power button -->
+                        <com.google.android.material.card.MaterialCardView
                             android:layout_width="140dp"
                             android:layout_height="140dp"
                             android:layout_gravity="center"
-                            android:background="@drawable/bg_power_button_ring" />
-
-                        <ImageButton
-                            android:id="@+id/btn_power"
-                            android:layout_width="120dp"
-                            android:layout_height="120dp"
-                            android:layout_gravity="center"
-                            android:background="@drawable/bg_power_button"
-                            android:contentDescription="@string/action_stop_service"
-                            android:padding="28dp"
-                            android:scaleType="centerInside"
-                            android:src="@drawable/ic_power_button" />
+                            app:cardCornerRadius="70dp"
+                            app:cardElevation="12dp"
+                            app:strokeWidth="0dp">
+                            <ImageButton
+                                android:id="@+id/btn_power"
+                                android:layout_width="match_parent"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_gradient_button"
+                                android:contentDescription="@string/action_stop_service"
+                                android:padding="32dp"
+                                android:scaleType="centerInside"
+                                android:src="@drawable/ic_power_button"
+                                android:tint="@android:color/white" />
+                        </com.google.android.material.card.MaterialCardView>
                     </FrameLayout>
 
                     <!-- Status: dot + Connected/Disconnected -->
-                    <LinearLayout
+                    <com.google.android.material.card.MaterialCardView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_gravity="center_horizontal"
-                        android:layout_marginTop="12dp"
-                        android:gravity="center_vertical"
-                        android:orientation="horizontal">
-
-                        <View
-                            android:id="@+id/status_dot"
-                            android:layout_width="8dp"
-                            android:layout_height="8dp"
-                            android:background="@drawable/bg_status_dot_connected" />
-
-                        <TextView
-                            android:id="@+id/tv_status"
+                        android:layout_marginTop="20dp"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
+                        app:strokeWidth="0dp"
+                        app:cardBackgroundColor="@color/card_gradient_end">
+                        <LinearLayout
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:text="@string/vpn_disconnected"
-                            android:textColor="@color/md_theme_onBackground"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-                    </LinearLayout>
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingHorizontal="16dp"
+                            android:paddingVertical="8dp">
+
+                            <View
+                                android:id="@+id/status_dot"
+                                android:layout_width="12dp"
+                                android:layout_height="12dp"
+                                android:background="@drawable/bg_status_dot_connected" />
+
+                            <TextView
+                                android:id="@+id/tv_status"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:text="@string/vpn_disconnected"
+                                android:textColor="@color/md_theme_onBackground"
+                                android:textSize="16sp"
+                                android:textStyle="bold"
+                                android:letterSpacing="0.02" />
+                        </LinearLayout>
+                    </com.google.android.material.card.MaterialCardView>
 
                     <!-- Speed section -->
                     <TextView
@@ -147,10 +191,10 @@
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        app:cardBackgroundColor="@color/md_theme_surfaceVariant"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
+                        android:layout_marginTop="16dp"
+                        app:cardBackgroundColor="@color/card_gradient_end"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="6dp"
                         app:strokeWidth="0dp">
 
                         <LinearLayout
@@ -219,6 +263,38 @@
                                     android:textStyle="bold"
                                     android:letterSpacing="0.02" />
                             </LinearLayout>
+
+                            <View
+                                android:layout_width="1dp"
+                                android:layout_height="36dp"
+                                android:layout_marginHorizontal="8dp"
+                                android:background="@color/divider_color_light" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:gravity="center"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="@string/ping"
+                                    android:textColor="@color/vpn_speed_label"
+                                    android:textSize="11sp"
+                                    android:textAllCaps="true"
+                                    android:letterSpacing="0.05" />
+                                <TextView
+                                    android:id="@+id/tv_ping"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:text="—"
+                                    android:textColor="@color/md_theme_onBackground"
+                                    android:textSize="20sp"
+                                    android:textStyle="bold"
+                                    android:letterSpacing="0.02" />
+                            </LinearLayout>
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
@@ -235,11 +311,11 @@
 
                     <com.google.android.material.card.MaterialCardView
                         android:layout_width="match_parent"
-                        android:layout_height="200dp"
-                        android:layout_marginTop="8dp"
-                        app:cardBackgroundColor="@color/md_theme_surface"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="2dp"
+                        android:layout_height="220dp"
+                        android:layout_marginTop="12dp"
+                        app:cardBackgroundColor="@color/card_gradient_end"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="8dp"
                         app:strokeWidth="0dp">
 
                         <FrameLayout
@@ -270,14 +346,15 @@
                         android:id="@+id/country_selector"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="20dp"
+                        android:layout_marginTop="24dp"
                         android:clickable="true"
                         android:focusable="true"
-                        app:cardBackgroundColor="@color/md_theme_surfaceVariant"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
+                        app:cardBackgroundColor="@color/card_gradient_end"
+                        app:cardCornerRadius="20dp"
+                        app:cardElevation="4dp"
                         app:strokeWidth="0dp"
-                        app:rippleColor="@color/md_theme_primaryContainer">
+                        app:rippleColor="@color/accent_primary"
+                        app:rippleAlpha="0.2">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -326,4 +403,18 @@
         android:layout_width="match_parent"
         android:layout_height="1dp"
         android:visibility="invisible" />
+
+    <!-- Bottom Navigation -->
+    <com.google.android.material.bottomnavigation.BottomNavigationView
+        android:id="@+id/bottom_navigation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@color/card_gradient_end"
+        android:elevation="12dp"
+        app:itemIconTint="@color/bottom_nav_selector"
+        app:itemTextColor="@color/bottom_nav_selector"
+        app:labelVisibilityMode="labeled"
+        app:itemRippleColor="@color/accent_primary"
+        app:menu="@menu/bottom_navigation_menu" />
 </FrameLayout>

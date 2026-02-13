@@ -65,4 +65,22 @@
     <color name="vpn_card_white">#FFFFFF</color>
     <color name="vpn_speed_label">#9E9E9E</color>
     <color name="vpn_location_label">#9E9E9E</color>
+    
+    <!-- Bottom Navigation colors -->
+    <color name="bottom_nav_icon_color">#9E9E9E</color>
+    <color name="bottom_nav_text_color">#9E9E9E</color>
+    <color name="bottom_nav_selected_icon_color">#667eea</color>
+    <color name="bottom_nav_selected_text_color">#667eea</color>
+    
+    <!-- Modern gradient colors -->
+    <color name="gradient_start">#667eea</color>
+    <color name="gradient_mid">#764ba2</color>
+    <color name="gradient_end">#f093fb</color>
+    <color name="card_gradient_start">#FFFFFF</color>
+    <color name="card_gradient_end">#F5F7FA</color>
+    
+    <!-- Modern accent colors -->
+    <color name="accent_primary">#667eea</color>
+    <color name="accent_secondary">#764ba2</color>
+    <color name="accent_tertiary">#f093fb</color>
 </resources>

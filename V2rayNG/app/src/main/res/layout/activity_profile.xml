@@ -20,8 +20,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -128,10 +129,16 @@
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_upgrade"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
             android:text="@string/profile_upgrade_to_pro"
             android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_gradient_button"
+            android:textColor="@android:color/white"
+            app:cornerRadius="16dp"
+            app:elevation="4dp"
             android:visibility="gone" />
 
         <!-- Card بخش ارتقا -->
@@ -141,8 +148,9 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
             android:visibility="gone"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout
                 android:id="@+id/layout_upgrade"
@@ -250,10 +258,16 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_submit_order"
                     android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
+                    android:layout_height="56dp"
                     android:layout_marginTop="@dimen/padding_spacing_dp12"
                     android:text="@string/order_submit"
-                    android:textAllCaps="false" />
+                    android:textAllCaps="false"
+                    android:textSize="16sp"
+                    android:textStyle="bold"
+                    android:background="@drawable/bg_gradient_button"
+                    android:textColor="@android:color/white"
+                    app:cornerRadius="16dp"
+                    app:elevation="4dp" />
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
@@ -262,8 +276,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="2dp">
+            app:cardCornerRadius="24dp"
+            app:cardElevation="8dp"
+            app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout
                 android:layout_width="match_parent"

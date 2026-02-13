@@ -49,6 +49,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val apiSyncState by lazy { MutableLiveData<ApiSyncState>() }
     /** سرعت آپلود و دانلود برای نمایش در UI (اول: آپلود، دوم: دانلود) */
     val speedLiveData by lazy { MutableLiveData<Pair<String, String>>(Pair("—", "—")) }
+    /** پینگ فعلی برای نمایش در UI (به میلی‌ثانیه) */
+    val pingLiveData by lazy { MutableLiveData<Long?>(null) }
+    /** وضعیت واقعی اتصال بر اساس ترافیک (true = واقعاً متصل و ترافیک دارد) */
+    val isActuallyConnected by lazy { MutableLiveData<Boolean>(false) }
     private val tcpingTestScope by lazy { CoroutineScope(Dispatchers.IO) }
     private val vpnServersRepository by lazy { VpnServersRepository() }
 
@@ -315,6 +319,19 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     /**
+     * بررسی وضعیت واقعی اتصال بر اساس ترافیک فعلی.
+     */
+    private fun checkActualConnectionState() {
+        val currentSpeed = speedLiveData.value
+        val hasRealTraffic = currentSpeed != null &&
+            currentSpeed.first != "—" && currentSpeed.second != "—" &&
+            currentSpeed.first != "0.0 B/s" && currentSpeed.second != "0.0 B/s" &&
+            !currentSpeed.first.contains("0.0") && !currentSpeed.second.contains("0.0")
+        
+        isActuallyConnected.value = (isRunning.value == true) && hasRealTraffic
+    }
+
+    /**
      * Changes the subscription ID.
      * @param id The new subscription ID.
      */
@@ -491,30 +508,51 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
                     isRunning.value = true
+                    // بررسی مجدد وضعیت اتصال واقعی
+                    checkActualConnectionState()
                 }
 
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
                     isRunning.value = false
                     speedLiveData.value = Pair("—", "—")
+                    isActuallyConnected.value = false
+                    pingLiveData.value = null
                 }
 
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     getApplication<AngApplication>().toastSuccess(R.string.toast_services_success)
                     isRunning.value = true
+                    // هنوز ترافیک نداریم، پس متصل نیست
+                    isActuallyConnected.value = false
                 }
 
                 AppConfig.MSG_STATE_START_FAILURE -> {
                     getApplication<AngApplication>().toastError(R.string.toast_services_failure)
                     isRunning.value = false
+                    isActuallyConnected.value = false
                 }
 
                 AppConfig.MSG_STATE_STOP_SUCCESS -> {
                     isRunning.value = false
                     speedLiveData.value = Pair("—", "—")
+                    isActuallyConnected.value = false
+                    pingLiveData.value = null
                 }
 
                 AppConfig.MSG_MEASURE_DELAY_SUCCESS -> {
-                    updateTestResultAction.value = intent.getStringExtra("content")
+                    val content = intent.getStringExtra("content")
+                    updateTestResultAction.value = content
+                    // استخراج پینگ از پیام (مثلاً "Available (123ms)")
+                    content?.let { msg ->
+                        val pingMatch = Regex("""(\d+)\s*ms""").find(msg)
+                        pingMatch?.let {
+                            try {
+                                pingLiveData.value = it.groupValues[1].toLong()
+                            } catch (e: Exception) {
+                                // ignore
+                            }
+                        }
+                    }
                 }
 
                 AppConfig.MSG_MEASURE_CONFIG_SUCCESS -> {
@@ -540,7 +578,17 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                     val content = intent.getStringExtra("content") ?: return@onReceive
                     val parts = content.split(",", limit = 2)
                     if (parts.size == 2) {
-                        speedLiveData.value = Pair(parts[0].trim(), parts[1].trim())
+                        val upload = parts[0].trim()
+                        val download = parts[1].trim()
+                        speedLiveData.value = Pair(upload, download)
+                        
+                        // بررسی اینکه آیا واقعاً ترافیک وجود دارد
+                        val hasRealTraffic = upload != "0.0 B/s" && download != "0.0 B/s" &&
+                            upload != "—" && download != "—" &&
+                            !upload.contains("0.0") && !download.contains("0.0")
+                        
+                        // فقط زمانی متصل است که هم سرویس اجرا باشد و هم ترافیک واقعی داشته باشد
+                        isActuallyConnected.value = (isRunning.value == true) && hasRealTraffic
                     }
                 }
             }

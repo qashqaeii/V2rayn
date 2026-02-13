@@ -36,6 +36,7 @@ import com.v2ray.ang.handler.SettingsManager
 import com.v2ray.ang.handler.V2RayServiceManager
 import com.v2ray.ang.viewmodel.MainViewModel
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import java.util.Locale
 
@@ -114,6 +115,26 @@ class MainActivity : HelperBaseActivity() {
         binding.tvStatus.setOnClickListener { handleStatusClick() }
         binding.countrySelector.setOnClickListener { openChooseCountrySheet() }
         binding.btnMenu.setOnClickListener { showMenu(it) }
+        
+        // Bottom Navigation
+        binding.bottomNavigation.setOnItemSelectedListener { item ->
+            when (item.itemId) {
+                R.id.nav_home -> {
+                    // Already on home
+                    true
+                }
+                R.id.nav_servers -> {
+                    openChooseCountrySheet()
+                    true
+                }
+                R.id.nav_profile -> {
+                    startActivity(Intent(this, ProfileActivity::class.java))
+                    true
+                }
+                else -> false
+            }
+        }
+        binding.bottomNavigation.selectedItemId = R.id.nav_home
 
         setupGroupTab()
         setupViewModel()
@@ -128,9 +149,26 @@ class MainActivity : HelperBaseActivity() {
         mainViewModel.speedLiveData.observe(this) { (upload, download) ->
             binding.tvUploadSpeed.text = upload
             binding.tvDownloadSpeed.text = download
+            // بررسی مجدد وضعیت اتصال واقعی
+            updateConnectionState()
+        }
+        mainViewModel.pingLiveData.observe(this) { ping ->
+            updatePingDisplay(ping)
+        }
+        // تست پینگ به صورت دوره‌ای وقتی متصل است
+        lifecycleScope.launch {
+            while (isActive) {
+                delay(10000) // هر 10 ثانیه
+                if (mainViewModel.isRunning.value == true && mainViewModel.isActuallyConnected.value == true) {
+                    mainViewModel.testCurrentServerRealPing()
+                }
+            }
+        }
+        mainViewModel.isActuallyConnected.observe(this) { isConnected ->
+            updateConnectionState()
         }
         mainViewModel.isRunning.observe(this) { isRunning ->
-            applyRunningState(false, isRunning)
+            updateConnectionState()
         }
         mainViewModel.apiSyncState.observe(this) { state ->
             when (state) {
@@ -224,18 +262,50 @@ class MainActivity : HelperBaseActivity() {
         }
         binding.progressBar.isVisible = false
         binding.btnPower.isEnabled = true
-        if (isRunning) {
+        updateConnectionState()
+    }
+
+    /**
+     * به‌روزرسانی وضعیت اتصال بر اساس ترافیک واقعی.
+     */
+    private fun updateConnectionState() {
+        val isRunning = mainViewModel.isRunning.value == true
+        val isActuallyConnected = mainViewModel.isActuallyConnected.value == true
+        
+        if (isRunning && isActuallyConnected) {
+            // واقعاً متصل است و ترافیک دارد
             binding.btnPower.contentDescription = getString(R.string.action_stop_service)
             setStatusText(getString(R.string.vpn_connected))
             binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connected)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
             binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
+        } else if (isRunning && !isActuallyConnected) {
+            // سرویس اجرا شده اما ترافیک ندارد - در حال اتصال
+            binding.btnPower.contentDescription = getString(R.string.action_stop_service)
+            setStatusText(getString(R.string.vpn_connecting))
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
+            binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
+            binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
         } else {
+            // قطع شده
             binding.btnPower.contentDescription = getString(R.string.tasker_start_service)
             setStatusText(getString(R.string.vpn_disconnected))
             binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
             binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
+        }
+    }
+
+    /**
+     * به‌روزرسانی نمایش پینگ.
+     */
+    private fun updatePingDisplay(ping: Long?) {
+        if (ping != null) {
+            binding.tvPing.text = getString(R.string.ping_ms, ping)
+            binding.tvPing.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
+        } else {
+            binding.tvPing.text = "—"
+            binding.tvPing.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
         }
     }
 

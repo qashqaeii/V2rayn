@@ -1,45 +1,88 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:fillViewport="true"
+    android:background="@drawable/bg_gradient_main"
     android:fitsSystemWindows="true">
 
-    <LinearLayout
+    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="@dimen/padding_spacing_dp24"
-        android:gravity="center_horizontal"
-        android:layoutDirection="rtl"
-        tools:context=".ui.RegisterActivity">
+        android:layout_height="match_parent"
+        android:fillViewport="true">
 
-        <TextView
-            android:layout_width="wrap_content"
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_spacing_dp32"
-            android:text="@string/app_name"
-            android:textAppearance="@style/TextAppearance.AppCompat.Headline"
-            android:textStyle="bold" />
+            android:orientation="vertical"
+            android:padding="@dimen/padding_spacing_dp24"
+            android:gravity="center_horizontal"
+            android:layoutDirection="rtl"
+            tools:context=".ui.RegisterActivity">
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_spacing_dp8"
-            android:text="@string/register_title"
-            android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
-            android:textColor="?attr/colorOnSurfaceVariant" />
+            <!-- Logo/Title Section -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="48dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/card_gradient_end">
+                <LinearLayout
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:paddingHorizontal="32dp"
+                    android:paddingVertical="20dp"
+                    android:gravity="center">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/app_name"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Headline"
+                        android:textStyle="bold"
+                        android:textSize="28sp"
+                        android:textColor="@color/md_theme_onBackground"
+                        android:letterSpacing="0.02" />
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="@string/register_title"
+                        android:textAppearance="@style/TextAppearance.AppCompat.Subhead"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        android:textSize="14sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Input Fields Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                app:cardCornerRadius="24dp"
+                app:cardElevation="8dp"
+                app:strokeWidth="0dp"
+                app:cardBackgroundColor="@color/card_gradient_end">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="@dimen/padding_spacing_dp24">
 
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/til_username"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="@dimen/padding_spacing_dp32"
             android:hint="@string/login_username"
-            app:startIconDrawable="@android:drawable/ic_menu_myplaces">
+            app:startIconDrawable="@android:drawable/ic_menu_myplaces"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_username"
@@ -57,7 +100,11 @@
             android:layout_marginTop="@dimen/padding_spacing_dp16"
             android:hint="@string/login_password"
             app:endIconMode="password_toggle"
-            app:startIconDrawable="@android:drawable/ic_lock_lock">
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password"
@@ -75,7 +122,11 @@
             android:layout_marginTop="@dimen/padding_spacing_dp16"
             android:hint="@string/register_password_confirm"
             app:endIconMode="password_toggle"
-            app:startIconDrawable="@android:drawable/ic_lock_lock">
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusBottomEnd="16dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/et_password_confirm"
@@ -103,13 +154,22 @@
             android:textSize="14sp"
             android:checked="true" />
 
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btn_register"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="64dp"
             android:layout_marginTop="@dimen/padding_spacing_dp24"
             android:text="@string/register"
-            android:textAllCaps="false" />
+            android:textAllCaps="false"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:background="@drawable/bg_gradient_button"
+            android:textColor="@android:color/white"
+            app:cornerRadius="16dp"
+            app:elevation="4dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -137,4 +197,5 @@
                 android:focusable="true" />
         </LinearLayout>
     </LinearLayout>
-</ScrollView>
+    </ScrollView>
+</FrameLayout>
