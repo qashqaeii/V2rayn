@@ -101,6 +101,7 @@ class RegisterActivity : BaseActivity() {
     private fun saveLoginData(response: LoginResponse, username: String, password: String) {
         MmkvManager.saveAuthToken(response.token)
         MmkvManager.saveUserProfile(JsonUtil.toJson(response.user.profile))
+        MmkvManager.saveCurrentUsername(response.user.username)
         
         // علامت‌گذاری که کاربر ثبت‌نام کرده است
         MmkvManager.setHasRegistered(true)

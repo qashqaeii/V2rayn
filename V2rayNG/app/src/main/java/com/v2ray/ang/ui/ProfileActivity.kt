@@ -5,6 +5,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -66,9 +67,8 @@ class ProfileActivity : BaseActivity() {
             imagePickerLauncher.launch("image/*")
         }
 
-        binding.btnSubmitOrder.setOnClickListener {
-            submitOrder()
-        }
+        binding.btnSubmitOrder.setOnClickListener { submitOrder() }
+        binding.btnRetryOrder.setOnClickListener { submitOrder() }
 
         binding.btnLogout.setOnClickListener {
             logout()
@@ -90,6 +90,17 @@ class ProfileActivity : BaseActivity() {
     }
 
     private fun displayProfile(profile: UserProfileDto) {
+        val username = MmkvManager.getCurrentUsername() ?: MmkvManager.getSavedCredentials().first ?: getString(R.string.profile)
+        binding.tvProfileName.text = username
+        binding.tvProfileAvatarLetter.text = username.firstOrNull()?.uppercaseChar()?.toString() ?: "?"
+
+        binding.chipSubscriptionBadge.text = profile.subscriptionStatusDisplay
+        binding.chipSubscriptionBadge.setChipBackgroundColorResource(
+            if (profile.subscriptionStatus == "active") R.color.vpn_status_connected
+            else R.color.vpn_status_connecting
+        )
+        binding.chipSubscriptionBadge.setTextColor(ContextCompat.getColor(this, android.R.color.white))
+
         binding.tvAccountType.text = profile.accountTypeDisplay
         binding.tvSubscriptionStatus.text = profile.subscriptionStatusDisplay
         binding.tvCanAccessPro.text = if (profile.canAccessProServers) getString(R.string.yes) else getString(R.string.no)
@@ -155,19 +166,14 @@ class ProfileActivity : BaseActivity() {
     }
 
     private fun submitOrder() {
-        val trackingCode = binding.etTrackingCode.text.toString().trim()
-        if (trackingCode.isEmpty()) {
-            binding.tilTrackingCode.error = getString(R.string.tracking_code_required)
-            return
-        }
-        binding.tilTrackingCode.error = null
-
         if (selectedImageUri == null) {
             Toast.makeText(this, getString(R.string.receipt_image_required), Toast.LENGTH_SHORT).show()
             return
         }
 
         binding.btnSubmitOrder.isEnabled = false
+        binding.tvOrderError.visibility = View.GONE
+        binding.btnRetryOrder.visibility = View.GONE
         showLoading()
 
         lifecycleScope.launch {
@@ -180,19 +186,31 @@ class ProfileActivity : BaseActivity() {
                     file.writeBytes(bytes ?: ByteArray(0))
                     file
                 }
-                repository.createOrder(trackingCode, tempFile)
-                Toast.makeText(this@ProfileActivity, getString(R.string.order_submitted), Toast.LENGTH_SHORT).show()
-                binding.cardUpgrade.visibility = View.GONE
-                binding.etTrackingCode.text?.clear()
-                selectedImageUri = null
-                binding.ivReceipt.visibility = View.GONE
-                loadOrders()
-                loadProfile() // Refresh profile to check if upgraded
+                repository.createOrder(tempFile)
+                runOnUiThread {
+                    hideLoading()
+                    binding.btnSubmitOrder.isEnabled = true
+                    Toast.makeText(this@ProfileActivity, getString(R.string.order_submitted), Toast.LENGTH_SHORT).show()
+                    binding.cardUpgrade.visibility = View.GONE
+                    selectedImageUri = null
+                    binding.ivReceipt.visibility = View.GONE
+                    loadOrders()
+                    loadProfile()
+                }
             } catch (e: Exception) {
-                Toast.makeText(this@ProfileActivity, getString(R.string.order_submit_failed) + ": " + e.message, Toast.LENGTH_LONG).show()
-            } finally {
-                binding.btnSubmitOrder.isEnabled = true
-                hideLoading()
+                runOnUiThread {
+                    hideLoading()
+                    binding.btnSubmitOrder.isEnabled = true
+                    val isTimeout = e is java.net.SocketTimeoutException ||
+                        e.message?.contains("timeout", ignoreCase = true) == true
+                    if (isTimeout) {
+                        binding.tvOrderError.text = getString(R.string.order_submit_timeout)
+                        binding.tvOrderError.visibility = View.VISIBLE
+                        binding.btnRetryOrder.visibility = View.VISIBLE
+                    } else {
+                        Toast.makeText(this@ProfileActivity, getString(R.string.order_submit_failed) + ": " + e.message, Toast.LENGTH_LONG).show()
+                    }
+                }
             }
         }
     }

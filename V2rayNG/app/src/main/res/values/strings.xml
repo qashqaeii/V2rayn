@@ -310,6 +310,8 @@
     <string name="receipt_image_required">تصویر فیش الزامی است</string>
     <string name="order_submitted">سفارش با موفقیت ثبت شد</string>
     <string name="order_submit_failed">خطا در ثبت سفارش</string>
+    <string name="order_submit_timeout">زمان اتصال به سرور به پایان رسید. برای تلاش مجدد دکمه زیر را بزنید.</string>
+    <string name="order_retry">تلاش مجدد</string>
     <string name="logout">خروج از حساب</string>
     <string name="pro_server_locked">این سرور فقط برای کاربران حرفه‌ای در دسترس است</string>
     <string name="plan_price">قیمت:</string>

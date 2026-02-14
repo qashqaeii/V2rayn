@@ -15,13 +15,72 @@
         android:layoutDirection="rtl"
         tools:context=".ui.ProfileActivity">
 
+        <!-- Card هدر پروفایل: آواتار + نام + بج وضعیت -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/padding_spacing_dp16"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="6dp"
+            app:cardBackgroundColor="@color/card_gradient_end">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:gravity="center_horizontal"
+                android:padding="@dimen/padding_spacing_dp24">
+
+                <FrameLayout
+                    android:layout_width="80dp"
+                    android:layout_height="80dp">
+
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_avatar_circle" />
+
+                    <TextView
+                        android:id="@+id/tv_profile_avatar_letter"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        android:textColor="?attr/colorOnSurfaceVariant"
+                        tools:text="ک" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tv_profile_name"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp12"
+                    android:textAppearance="@style/TextAppearance.AppCompat.Title"
+                    android:textStyle="bold"
+                    tools:text="کاربر نمونه" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chip_subscription_badge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="@dimen/padding_spacing_dp8"
+                    android:textSize="12sp"
+                    app:chipBackgroundColor="@color/card_gradient_end"
+                    app:chipStrokeColor="?attr/colorOutline"
+                    app:chipStrokeWidth="1dp"
+                    app:chipCornerRadius="12dp"
+                    tools:text="فعال" />
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
         <!-- Card اطلاعات حساب -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
             app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout
@@ -148,8 +207,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
             android:visibility="gone"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
             app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout
@@ -221,22 +280,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/til_tracking_code"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="@dimen/padding_spacing_dp12"
-                android:hint="@string/order_tracking_code">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/et_tracking_code"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:maxLines="1" />
-            </com.google.android.material.textfield.TextInputLayout>
-
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btn_select_receipt"
                 style="@style/Widget.Material3.Button.OutlinedButton"
@@ -254,6 +297,27 @@
                 android:scaleType="centerCrop"
                 android:visibility="gone"
                 android:contentDescription="@string/order_receipt_preview" />
+
+            <TextView
+                android:id="@+id/tv_order_error"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/padding_spacing_dp8"
+                android:visibility="gone"
+                android:textColor="?attr/colorError"
+                android:textSize="14sp"
+                tools:text="زمان اتصال به سرور به پایان رسید."
+                tools:visibility="visible" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btn_retry_order"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="@dimen/padding_spacing_dp8"
+                android:visibility="gone"
+                android:text="@string/order_retry"
+                android:textAllCaps="false" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btn_submit_order"
@@ -276,8 +340,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="@dimen/padding_spacing_dp16"
-            app:cardCornerRadius="24dp"
-            app:cardElevation="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="6dp"
             app:cardBackgroundColor="@color/card_gradient_end">
 
             <LinearLayout

@@ -32,6 +32,7 @@ object MmkvManager {
     private const val KEY_WEBDAV_CONFIG = "WEBDAV_CONFIG"
     private const val KEY_AUTH_TOKEN = "AUTH_TOKEN"
     private const val KEY_USER_PROFILE = "USER_PROFILE"
+    private const val KEY_CURRENT_USERNAME = "CURRENT_USERNAME"
     private const val KEY_SAVED_USERNAME = "SAVED_USERNAME"
     private const val KEY_SAVED_PASSWORD = "SAVED_PASSWORD"
     private const val KEY_REMEMBER_ME = "REMEMBER_ME"
@@ -773,11 +774,31 @@ object MmkvManager {
     }
 
     /**
+     * ذخیره نام کاربر جاری (برای نمایش در پروفایل).
+     */
+    fun saveCurrentUsername(username: String): Boolean {
+        return mainStorage.encode(KEY_CURRENT_USERNAME, username)
+    }
+
+    /**
+     * دریافت نام کاربر جاری.
+     */
+    fun getCurrentUsername(): String? {
+        return mainStorage.decodeString(KEY_CURRENT_USERNAME)
+    }
+
+    fun clearCurrentUsername(): Boolean {
+        mainStorage.removeValueForKey(KEY_CURRENT_USERNAME)
+        return true
+    }
+
+    /**
      * خروج کامل از حساب کاربری.
      */
     fun logout(): Boolean {
         clearAuthToken()
         clearUserProfile()
+        clearCurrentUsername()
         // اگر Remember Me فعال نباشد، اطلاعات ذخیره شده را پاک کن
         if (!isRememberMeEnabled()) {
             clearSavedCredentials()

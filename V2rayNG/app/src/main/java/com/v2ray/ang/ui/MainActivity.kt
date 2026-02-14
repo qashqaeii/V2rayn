@@ -4,17 +4,13 @@ import android.content.Intent
 import android.net.VpnService
 import android.os.Build
 import android.os.Bundle
-import android.view.Gravity
 import android.view.KeyEvent
-import android.view.Menu
-import android.view.MenuItem
 import android.view.View
 import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
-import androidx.appcompat.widget.PopupMenu
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
@@ -114,7 +110,6 @@ class MainActivity : HelperBaseActivity() {
         binding.btnPower.setOnClickListener { handlePowerAction() }
         binding.tvStatus.setOnClickListener { handleStatusClick() }
         binding.countrySelector.setOnClickListener { openChooseCountrySheet() }
-        binding.btnMenu.setOnClickListener { showMenu(it) }
         
         // Bottom Navigation
         binding.bottomNavigation.setOnItemSelectedListener { item ->
@@ -256,8 +251,8 @@ class MainActivity : HelperBaseActivity() {
         if (isLoading) {
             binding.progressBar.isVisible = true
             binding.btnPower.isEnabled = false
-            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
-            binding.tvStatus.text = getString(R.string.toast_services_start)
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connecting)
+            binding.tvStatus.text = getString(R.string.vpn_connecting)
             return
         }
         binding.progressBar.isVisible = false
@@ -283,7 +278,7 @@ class MainActivity : HelperBaseActivity() {
             // سرویس اجرا شده اما ترافیک ندارد - در حال اتصال
             binding.btnPower.contentDescription = getString(R.string.action_stop_service)
             setStatusText(getString(R.string.vpn_connecting))
-            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
+            binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connecting)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
             binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
         } else {
@@ -374,43 +369,6 @@ class MainActivity : HelperBaseActivity() {
             return
         }
         refreshSelectedServerUi()
-    }
-
-    private fun showMenu(anchor: View) {
-        PopupMenu(this, anchor, Gravity.END).apply {
-            menuInflater.inflate(R.menu.menu_main_locked, menu)
-            setOnMenuItemClickListener { item ->
-                when (item.itemId) {
-                    R.id.about -> {
-                        startActivity(Intent(this@MainActivity, AboutActivity::class.java))
-                        true
-                    }
-                    R.id.profile -> {
-                        startActivity(Intent(this@MainActivity, ProfileActivity::class.java))
-                        true
-                    }
-                    else -> false
-                }
-            }
-            show()
-        }
-    }
-
-    override fun onCreateOptionsMenu(menu: Menu): Boolean {
-        menuInflater.inflate(R.menu.menu_main_locked, menu)
-        return true
-    }
-
-    override fun onOptionsItemSelected(item: MenuItem): Boolean = when (item.itemId) {
-        R.id.about -> {
-            startActivity(Intent(this, AboutActivity::class.java))
-            true
-        }
-        R.id.profile -> {
-            startActivity(Intent(this, ProfileActivity::class.java))
-            true
-        }
-        else -> super.onOptionsItemSelected(item)
     }
 
     override fun onKeyDown(keyCode: Int, event: KeyEvent): Boolean {

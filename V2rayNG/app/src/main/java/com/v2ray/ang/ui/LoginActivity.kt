@@ -123,6 +123,7 @@ class LoginActivity : BaseActivity() {
     private fun saveLoginData(response: LoginResponse, username: String, password: String) {
         MmkvManager.saveAuthToken(response.token)
         MmkvManager.saveUserProfile(JsonUtil.toJson(response.user.profile))
+        MmkvManager.saveCurrentUsername(response.user.username)
         
         // علامت‌گذاری که کاربر لاگین کرده است (یعنی قبلاً ثبت‌نام کرده)
         MmkvManager.setHasRegistered(true)

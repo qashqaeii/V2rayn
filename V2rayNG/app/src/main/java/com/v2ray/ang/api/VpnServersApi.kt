@@ -28,7 +28,7 @@ interface VpnServersApi {
     @GET("orders/")
     suspend fun getOrders(): List<SubscriptionOrderDto>
 
-    /** ثبت سفارش جدید */
+    /** ثبت سفارش جدید (فیش واریزی؛ کد پیگیری حذف شده) */
     @Multipart
     @POST("orders/")
     suspend fun createOrder(

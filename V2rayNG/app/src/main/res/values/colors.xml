@@ -61,7 +61,8 @@
     <color name="vpn_power_blue">#5B8FD8</color>
     <color name="vpn_power_ring">#7BA8E8</color>
     <color name="vpn_status_connected">#4CAF50</color>
-    <color name="vpn_status_disconnected">#F44336</color>
+    <color name="vpn_status_connecting">#FF9800</color>
+    <color name="vpn_status_disconnected">#9E9E9E</color>
     <color name="vpn_card_white">#FFFFFF</color>
     <color name="vpn_speed_label">#9E9E9E</color>
     <color name="vpn_location_label">#9E9E9E</color>

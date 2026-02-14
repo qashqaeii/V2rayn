@@ -26,10 +26,10 @@ class VpnServersRepository {
 
     private val api: VpnServersApi by lazy {
         val okHttp = OkHttpClient.Builder()
-            .connectTimeout(10, TimeUnit.SECONDS)
-            .readTimeout(15, TimeUnit.SECONDS)
-            .writeTimeout(15, TimeUnit.SECONDS)
-            .callTimeout(20, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(45, TimeUnit.SECONDS)
+            .writeTimeout(45, TimeUnit.SECONDS)
+            .callTimeout(60, TimeUnit.SECONDS)
             .addInterceptor(AuthInterceptor())
             .applyCertificatePinning()
             .build()
@@ -58,8 +58,8 @@ class VpnServersRepository {
         return api.getOrders()
     }
 
-    suspend fun createOrder(trackingCode: String, receiptImageFile: File?): SubscriptionOrderDto {
-        val trackingCodeBody = trackingCode.toRequestBody(MultipartBody.FORM)
+    suspend fun createOrder(receiptImageFile: File?): SubscriptionOrderDto {
+        val trackingCodeBody = "".toRequestBody(MultipartBody.FORM)
         val imagePart = receiptImageFile?.let {
             val mediaType = "image/*".toMediaTypeOrNull()
             MultipartBody.Part.createFormData(
