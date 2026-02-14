@@ -13,4 +13,6 @@
     <dimen name="view_height_dp160">160dp</dimen>
     <dimen name="padding_spacing_dp24">24dp</dimen>
     <dimen name="padding_spacing_dp32">32dp</dimen>
+    <dimen name="spacing_top_content">16dp</dimen>
+    <dimen name="bottom_nav_height">56dp</dimen>
 </resources>

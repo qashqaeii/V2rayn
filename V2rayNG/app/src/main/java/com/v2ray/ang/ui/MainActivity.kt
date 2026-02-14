@@ -69,24 +69,25 @@ class MainActivity : HelperBaseActivity() {
             return
         }
         
-        // تنظیم full screen mode
+        // حذف نوار بنفش بالا: پس‌زمینه پنجره همان گرادیان باشد
+        window.statusBarColor = ContextCompat.getColor(this, R.color.gradient_start)
+        window.navigationBarColor = ContextCompat.getColor(this, R.color.card_gradient_end)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController?.let {
-            it.isAppearanceLightStatusBars = true
+            it.isAppearanceLightStatusBars = false
             it.isAppearanceLightNavigationBars = true
             it.hide(WindowInsetsCompat.Type.statusBars() or WindowInsetsCompat.Type.navigationBars())
             it.systemBarsBehavior = WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE
         }
-        
         setContentView(binding.root)
-        
-        // اضافه کردن padding برای status bar به LinearLayout اصلی
-        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { view, insets ->
+        // فاصله کم از بالا (جلوگیری از نوار بنفش بزرگ)
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            val topPadding = systemBars.top + resources.getDimensionPixelSize(R.dimen.padding_spacing_dp8)
             binding.mainContent.setPadding(
                 binding.mainContent.paddingLeft,
-                systemBars.top + resources.getDimensionPixelSize(android.R.dimen.app_icon_size) / 4,
+                topPadding,
                 binding.mainContent.paddingRight,
                 systemBars.bottom
             )
@@ -137,6 +138,7 @@ class MainActivity : HelperBaseActivity() {
 
         checkAndRequestPermission(PermissionType.POST_NOTIFICATIONS) {}
         refreshSelectedServerUi()
+        updateConnectionState()
     }
 
     private fun setupViewModel() {
@@ -150,15 +152,7 @@ class MainActivity : HelperBaseActivity() {
         mainViewModel.pingLiveData.observe(this) { ping ->
             updatePingDisplay(ping)
         }
-        // تست پینگ به صورت دوره‌ای وقتی متصل است
-        lifecycleScope.launch {
-            while (isActive) {
-                delay(10000) // هر 10 ثانیه
-                if (mainViewModel.isRunning.value == true && mainViewModel.isActuallyConnected.value == true) {
-                    mainViewModel.testCurrentServerRealPing()
-                }
-            }
-        }
+        // فقط یک بار بعد از اتصال موفق تست پینگ انجام می‌شود (بدون تست دوره‌ای)
         mainViewModel.isActuallyConnected.observe(this) { isConnected ->
             updateConnectionState()
         }
@@ -268,22 +262,22 @@ class MainActivity : HelperBaseActivity() {
         val isActuallyConnected = mainViewModel.isActuallyConnected.value == true
         
         if (isRunning && isActuallyConnected) {
-            // واقعاً متصل است و ترافیک دارد
             binding.btnPower.contentDescription = getString(R.string.action_stop_service)
+            binding.btnPower.setImageResource(R.drawable.ic_stop_24dp)
             setStatusText(getString(R.string.vpn_connected))
             binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connected)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
             binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.md_theme_onBackground))
         } else if (isRunning && !isActuallyConnected) {
-            // سرویس اجرا شده اما ترافیک ندارد - در حال اتصال
             binding.btnPower.contentDescription = getString(R.string.action_stop_service)
+            binding.btnPower.setImageResource(R.drawable.ic_stop_24dp)
             setStatusText(getString(R.string.vpn_connecting))
             binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_connecting)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
             binding.tvUploadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))
         } else {
-            // قطع شده
             binding.btnPower.contentDescription = getString(R.string.tasker_start_service)
+            binding.btnPower.setImageResource(R.drawable.ic_play_24dp)
             setStatusText(getString(R.string.vpn_disconnected))
             binding.statusDot.setBackgroundResource(R.drawable.bg_status_dot_disconnected)
             binding.tvDownloadSpeed.setTextColor(ContextCompat.getColor(this, R.color.vpn_speed_label))

@@ -32,6 +32,7 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.cancelChildren
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Collections
@@ -508,8 +509,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
             when (intent?.getIntExtra("key", 0)) {
                 AppConfig.MSG_STATE_RUNNING -> {
                     isRunning.value = true
-                    // بررسی مجدد وضعیت اتصال واقعی
-                    checkActualConnectionState()
+                    isActuallyConnected.value = true
                 }
 
                 AppConfig.MSG_STATE_NOT_RUNNING -> {
@@ -522,8 +522,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                 AppConfig.MSG_STATE_START_SUCCESS -> {
                     getApplication<AngApplication>().toastSuccess(R.string.toast_services_success)
                     isRunning.value = true
-                    // هنوز ترافیک نداریم، پس متصل نیست
-                    isActuallyConnected.value = false
+                    isActuallyConnected.value = true
+                    // فقط یک تست پینگ اولیه بعد از اتصال
+                    viewModelScope.launch {
+                        delay(2000L)
+                        if (isRunning.value == true) testCurrentServerRealPing()
+                    }
                 }
 
                 AppConfig.MSG_STATE_START_FAILURE -> {
@@ -581,14 +585,7 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
                         val upload = parts[0].trim()
                         val download = parts[1].trim()
                         speedLiveData.value = Pair(upload, download)
-                        
-                        // بررسی اینکه آیا واقعاً ترافیک وجود دارد
-                        val hasRealTraffic = upload != "0.0 B/s" && download != "0.0 B/s" &&
-                            upload != "—" && download != "—" &&
-                            !upload.contains("0.0") && !download.contains("0.0")
-                        
-                        // فقط زمانی متصل است که هم سرویس اجرا باشد و هم ترافیک واقعی داشته باشد
-                        isActuallyConnected.value = (isRunning.value == true) && hasRealTraffic
+                        // وضعیت متصل فقط با شروع/توقف سرویس عوض می‌شود، نه با نوسان ترافیک
                     }
                 }
             }

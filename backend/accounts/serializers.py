@@ -114,11 +114,11 @@ class SubscriptionOrderSerializer(serializers.ModelSerializer):
 
     def create(self, validated_data):
         validated_data["user"] = self.context["request"].user
-        # اگر پلن انتخاب نشده، پلن پیش‌فرض Pro را پیدا کن
         if not validated_data.get("plan"):
             plan = SubscriptionPlan.objects.filter(plan_type=SubscriptionPlan.PLAN_PRO, is_active=True).first()
-            if plan:
-                validated_data["plan"] = plan
+            validated_data["plan"] = plan
+        if "plan_type" not in validated_data or not validated_data["plan_type"]:
+            validated_data.setdefault("plan_type", SubscriptionPlan.PLAN_PRO)
         return super().create(validated_data)
 
 

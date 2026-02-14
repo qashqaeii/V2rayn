@@ -107,15 +107,26 @@ class SubscriptionOrderListCreateView(APIView):
         )
 
     def post(self, request):
-        serializer = SubscriptionOrderSerializer(
-            data=request.data,
-            context={"request": request},
-            partial=True,
-        )
-        if not serializer.is_valid():
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        serializer.save()
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        try:
+            serializer = SubscriptionOrderSerializer(
+                data=request.data,
+                context={"request": request},
+                partial=True,
+            )
+            if not serializer.is_valid():
+                return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            order = serializer.save()
+            return Response(
+                SubscriptionOrderSerializer(order, context={"request": request}).data,
+                status=status.HTTP_201_CREATED,
+            )
+        except Exception as e:
+            import logging
+            logging.getLogger(__name__).exception("Order create failed: %s", e)
+            return Response(
+                {"detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            )
 
 
 class SubscriptionPlanView(APIView):
